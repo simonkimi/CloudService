@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.db.models import Sum
 from .models import ExploreModel
+from time import time
 
 
 class ExploreListSerializer(serializers.ModelSerializer):
@@ -26,31 +27,63 @@ class ExploreListSerializer(serializers.ModelSerializer):
 
 
 class StatisticSerializer(serializers.Serializer):
-    start_time = serializers.IntegerField(help_text='开始时间', read_only=True)
-    end_time = serializers.IntegerField(help_text='结束时间', read_only=True)
+    start_time = serializers.IntegerField(help_text='开始时间', write_only=True, default=0, allow_null=True)
+    end_time = serializers.IntegerField(help_text='结束时间', write_only=True, default=time, allow_null=True)
+
+    def validate(self, attrs):
+        print(attrs)
+        return attrs
 
     def save(self, **kwargs):
         user = self.context['user']
+        print(self.validated_data)
         min_time = min(self.validated_data['end_time'], self.validated_data['start_time'])
-        max_time = min(self.validated_data['end_time'], self.validated_data['start_time'])
+        max_time = max(self.validated_data['end_time'], self.validated_data['start_time'])
 
         queryset = ExploreModel.objects \
             .filter(user=user) \
             .filter(create_time__gte=min_time) \
             .filter(create_time__lt=max_time)
 
+        sums = queryset.aggregate(
+            Sum('oil'), Sum('ammo'), Sum('steel'), Sum('aluminium'),
+            Sum('dd_cube'), Sum('cl_cube'), Sum('bb_cube'), Sum('cv_cube'), Sum('ss_cube'),
+            Sum('fast_repair'), Sum('fast_build'), Sum('build_map'), Sum('equipment_map'),
+        )
+        if sums is not None:
+            return {
+                'oil': sums['oil__sum'],
+                'ammo': sums['ammo__sum'],
+                'steel': sums['steel__sum'],
+                'aluminium': sums['aluminium__sum'],
+                'dd_cube': sums['dd_cube__sum'],
+                'cl_cube': sums['cl_cube__sum'],
+                'bb_cube': sums['bb_cube__sum'],
+                'cv_cube': sums['cv_cube__sum'],
+                'ss_cube': sums['ss_cube__sum'],
+                'fast_repair': sums['fast_repair__sum'],
+                'fast_build': sums['fast_build__sum'],
+                'build_map': sums['build_map__sum'],
+                'equipment_map': sums['equipment_map__sum'],
+            }
         return {
-            'oil': queryset.aggregate(Sum('oil')),
-            'ammo': queryset.aggregate(Sum('ammo')),
-            'steel': queryset.aggregate(Sum('steel')),
-            'aluminium': queryset.aggregate(Sum('aluminium')),
-            'dd_cube': queryset.aggregate(Sum('dd_cube')),
-            'cl_cube': queryset.aggregate(Sum('cl_cube')),
-            'bb_cube': queryset.aggregate(Sum('bb_cube')),
-            'cv_cube': queryset.aggregate(Sum('cv_cube')),
-            'ss_cube': queryset.aggregate(Sum('ss_cube')),
-            'fast_repair': queryset.aggregate(Sum('fast_repair')),
-            'fast_build': queryset.aggregate(Sum('fast_build')),
-            'build_map': queryset.aggregate(Sum('build_map')),
-            'equipment_map': queryset.aggregate(Sum('equipment_map')),
+            'oil': 0,
+            'ammo': 0,
+            'steel': 0,
+            'aluminium': 0,
+            'dd_cube': 0,
+            'cl_cube': 0,
+            'bb_cube': 0,
+            'cv_cube': 0,
+            'ss_cube': 0,
+            'fast_repair': 0,
+            'fast_build': 0,
+            'build_map': 0,
+            'equipment_map': 0,
         }
+
+    class Meta:
+        fields = (
+            'start_time',
+            'end_time'
+        )
