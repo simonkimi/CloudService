@@ -8,3 +8,5 @@
 !/apps/**/migrations/__init__.py
 
 /extra_apps/game/log/
+**/log/
+*.log

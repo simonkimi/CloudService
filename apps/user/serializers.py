@@ -39,11 +39,9 @@ class UserRegisterSerializer(serializers.Serializer):
         except User.DoesNotExist:
             pass
         try:
-            NetSender().login(
-                username=attrs['username'],
-                password=attrs['password'],
-                server=attrs['server']
-            )
+            NetSender(username=attrs['username'],
+                      password=attrs['password'],
+                      server=attrs['server']).login()
         except Exception as e:
             raise serializers.ValidationError(f'验证失败: {str(e)}')
         return attrs

@@ -9,29 +9,70 @@ import zlib
 import random
 from urllib.parse import urlencode
 from extra_apps.log import Log
-from extra_apps.game.constant import URL_IOS_VERSION, URL_VERSION, PASS_KEY, PASS_KEY_HEAD
+from extra_apps.game.constant import URL_IOS_VERSION, URL_VERSION, PASS_KEY, PASS_KEY_HEAD, SERVER_LIST, NORMAL_HEADERS
+
+
+class LoginPasswordException(Exception):
+    pass
+
+
+class ServerCloseException(Exception):
+    pass
+
+
+class NetWorkException(Exception):
+    def __init__(self, code, url=""):
+        self.code = code
+        self.url = url
 
 
 class NetSender:
-    def __init__(self):
+    def __init__(self, username, password, server):
         self._cookies = None
         self._version = None
         self._channel = None
+        self._username = username
+        self._password = password
+        self._server_index = server
+        self._server = SERVER_LIST[server]
 
-    def login(self, username: str, password: str, server: int):
-        url_version = URL_VERSION if server <= 3 else URL_IOS_VERSION
-        self._channel = '100011' if server <= 3 else '100015'
+    def get_user_data(self):
+        url = f'{self._server}api/initGame?&crazy=0{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def get_user_ship(self):
+        url = f'{self._server}api/getShipList{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def get_explore(self, maps):
+        url = f'{self._server}explore/getResult/{maps}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def start_explore(self, maps, fleet):
+        url = f'{self._server}explore/start/{fleet}/{maps}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def _build_get(self, url):
+        data = requests.get(url=url, cookies=self._cookies, headers=NORMAL_HEADERS, timeout=20).content
+        json_data = json.loads(zlib.decompress(data))
+        if 'eid' in json_data:
+            raise NetWorkException(code=json_data['eid'], url=url)
+        return json_data
+
+    def login(self):
+        url_version = URL_VERSION if self._server_index <= 3 else URL_IOS_VERSION
+        self._channel = '100011' if self._server_index <= 3 else '100015'
         # 获取版本信息
         try:
             rep = requests.get(url=url_version).json()
             if 'version' not in rep:
-                raise Exception('version不在登陆中, 服务器正在维护')
+                raise ServerCloseException()
 
             self._version = rep['version']['newVersionId']
             login_server = rep['loginServer']
             hm_login_server = rep['hmLoginServer']
         except Exception as e:
-            Log.e('NetSender.login.version', '获取Version出错', f'用户名:{username}', str(e))
+            Log.e('NetSender.login.version', '获取Version出错', f'用户名:{self._username}', str(e))
             raise Exception('NetSender.login.version ' + str(e))
 
         # 获取token
@@ -41,15 +82,17 @@ class NetSender:
                 "platform": "0",
                 "appid": "0",
                 "app_server_type": "0",
-                "password": password,
-                "username": username
+                "password": self._password,
+                "username": self._username
             }).replace(" ", "")
             rsp = requests.post(url=url_token, data=login_data, headers=self._build_headers(url_token)).json()
             if "error" in rsp and int(rsp["error"]) != 0:
-                raise Exception(f'code:{rsp["error"]} msg:{rsp["errmsg"]}')
+                if int(rsp['error']) == 21003:
+                    raise LoginPasswordException()
+                raise Exception(f'code:{rsp["error"]} msg:{rsp["errmsg"] if "errmsg" in rsp else ""}')
             token = rsp['access_token']
         except Exception as e:
-            Log.e('NetSender.login.token', '获取Token出错', f'用户名:{username}', str(e))
+            Log.e('NetSender.login.token', '获取Token出错', f'用户名:{self._username}', str(e))
             raise Exception('NetSender.login.token ' + str(e))
 
         # 验证token并获取游戏token
@@ -60,7 +103,7 @@ class NetSender:
             if "error" in rsp and int(rsp["error"]) != 0:
                 raise Exception(f'验证Token出错:{rsp["errmsg"]}')
         except Exception as e:
-            Log.e('NetSender.login.url_info)', '验证Token出错', f'用户名:{username}', str(e))
+            Log.e('NetSender.login.url_info)', '验证Token出错', f'用户名:{self._username}', str(e))
             raise Exception('NetSender.login.url_info ' + str(e))
 
         # 获取用户Cookies
@@ -71,12 +114,12 @@ class NetSender:
             rsp_data = json.loads(zlib.decompress(rsp.content))
             uid = rsp_data['userId']
         except Exception as e:
-            Log.e('NetSender.login.url_login)', '获取Token出错', f'用户名:{username}', str(e))
+            Log.e('NetSender.login.url_login)', '获取Token出错', f'用户名:{self._username}', str(e))
             raise Exception('NetSender.login.url_login ' + str(e))
 
         # 正式登录游戏
         now_time = str(int(round(time.time() * 1000)))
-        random.seed(hashlib.md5(username.encode('utf-8')).hexdigest())
+        random.seed(hashlib.md5(self._username.encode('utf-8')).hexdigest())
         data_dict = {
             'client_version': self._version,
             'phone_type': 'huawei tag-al00',
@@ -122,5 +165,5 @@ class NetSender:
 
 
 if __name__ == '__main__':
-    sender = NetSender()
-    sender.login('simon_xu', 'xusong404', 0)
+    sender = NetSender('simon_xu', 'xusong404', 0)
+    sender.login()
