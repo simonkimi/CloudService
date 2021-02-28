@@ -1,0 +1,8 @@
+*.sqlite3
+/.idea
+/venv/
+**/__pycache__/
+**/*.pyc
+
+/apps/**/migrations/*.py
+!/apps/**/migrations/__init__.py
