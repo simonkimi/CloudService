@@ -18,8 +18,9 @@ class NetSender:
         self._version = None
         self._channel = None
 
-    def login(self, username: str, password: str, service: int):
-        url_version = URL_VERSION if service <= 3 else URL_IOS_VERSION
+    def login(self, username: str, password: str, server: int):
+        url_version = URL_VERSION if server <= 3 else URL_IOS_VERSION
+        self._channel = '100011' if server <= 3 else '100015'
         # 获取版本信息
         try:
             rep = requests.get(url=url_version).json()
