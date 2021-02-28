@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'user',
     'explore',
+    'pvp',
+    'campaign',
+    'repair'
 ]
 
 MIDDLEWARE = [
