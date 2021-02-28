@@ -2,7 +2,7 @@ from django.db import models
 from user.models import User
 
 
-class EarningBase:
+class EarningBaseModel(models.Model):
     oil = models.IntegerField(help_text='油收益')
     ammo = models.IntegerField(help_text='弹药')
     steel = models.IntegerField(help_text='钢铁')
@@ -19,8 +19,11 @@ class EarningBase:
     build_map = models.IntegerField(help_text='建造蓝图')
     equipment_map = models.IntegerField(help_text='开发蓝图')
 
+    class Meta:
+        abstract = True
 
-class ExploreModel(models.Model, EarningBase):
+
+class ExploreModel(EarningBaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     map = models.CharField(max_length=128, help_text='远征地图')
     create_time = models.IntegerField(help_text='创建时间')
