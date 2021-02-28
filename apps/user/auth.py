@@ -5,12 +5,12 @@ class EmptyPasswordHasher(BasePasswordHasher):
     algorithm = "empty"
 
     def encode(self, password, salt):
-        return password
+        return f'{self.algorithm}${password}'
 
     def verify(self, password: str, encoded):
-        return encoded == password
+        return encoded.split("$", 1)[1] == password
 
     def safe_summary(self, encoded):
         return {
-            'algorithm': self.algorithm
+            'algorithm': encoded.split("$", 1)
         }

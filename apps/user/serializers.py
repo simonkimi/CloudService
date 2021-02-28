@@ -30,13 +30,14 @@ class UserLoginSerializer(serializers.Serializer):
 class UserRegisterSerializer(serializers.Serializer):
     username = serializers.CharField(help_text='用户名')
     password = serializers.CharField(help_text='密码')
-    server = serializers.CharField(help_text='服务器')
+    server = serializers.IntegerField(help_text='服务器')
 
     def validate(self, attrs):
         try:
             User.objects.get(username=attrs['username'])
-        except User.DoesNotExist:
             raise serializers.ValidationError(f'用户已存在')
+        except User.DoesNotExist:
+            pass
         try:
             NetSender().login(
                 username=attrs['username'],
@@ -81,7 +82,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    user_profile = UserProfileSerializer
+    user_profile = UserProfileSerializer()
 
     class Meta:
         model = User

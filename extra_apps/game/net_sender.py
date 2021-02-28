@@ -32,7 +32,7 @@ class NetSender:
             hm_login_server = rep['hmLoginServer']
         except Exception as e:
             Log.e('NetSender.login.version', '获取Version出错', f'用户名:{username}', str(e))
-            raise Exception('NetSender.login.version)' + str(e))
+            raise Exception('NetSender.login.version ' + str(e))
 
         # 获取token
         try:
@@ -50,7 +50,7 @@ class NetSender:
             token = rsp['access_token']
         except Exception as e:
             Log.e('NetSender.login.token', '获取Token出错', f'用户名:{username}', str(e))
-            raise Exception('NetSender.login.token)' + str(e))
+            raise Exception('NetSender.login.token ' + str(e))
 
         # 验证token并获取游戏token
         try:
@@ -61,7 +61,7 @@ class NetSender:
                 raise Exception(f'验证Token出错:{rsp["errmsg"]}')
         except Exception as e:
             Log.e('NetSender.login.url_info)', '验证Token出错', f'用户名:{username}', str(e))
-            raise Exception('NetSender.login.url_info)' + str(e))
+            raise Exception('NetSender.login.url_info ' + str(e))
 
         # 获取用户Cookies
         try:
@@ -72,7 +72,7 @@ class NetSender:
             uid = rsp_data['userId']
         except Exception as e:
             Log.e('NetSender.login.url_login)', '获取Token出错', f'用户名:{username}', str(e))
-            raise Exception('NetSender.login.url_login)' + str(e))
+            raise Exception('NetSender.login.url_login ' + str(e))
 
         # 正式登录游戏
         now_time = str(int(round(time.time() * 1000)))

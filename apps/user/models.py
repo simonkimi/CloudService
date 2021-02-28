@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 class UserManager(BaseUserManager):
     def create_user(self, username, password, server, is_superuser=False):
-        user = self.model(username=username)
+        user = User.objects.create(username=username)
         user.is_superuser = is_superuser
         user.set_password(password)
         user.save()
