@@ -15,4 +15,3 @@ user = User.objects.all()[0]
 
 explore = ExploreMain(user)
 explore.main()
-

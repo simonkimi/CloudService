@@ -43,8 +43,6 @@ class NetSender:
         # }
         # self._requests.verify = False
 
-
-
     def get_user_data(self):
         url = f'{self._server}api/initGame?&crazy=0{self._build_url_tail()}'
         return self._build_get(url)
@@ -87,6 +85,22 @@ class NetSender:
 
     def campaign_get_result(self, night_fight):
         url = f'{self._server}campaign/getWarResult/{night_fight}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def repair_complete(self, dock_id, ship_id):
+        url = f'{self._server}boat/repairComplete/{dock_id}/{ship_id}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def shower(self, ship_id):
+        url = f'{self._server}boat/repair/{ship_id}/0/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def rubdown(self, ship_id):
+        url = f'{self._server}boat/rubdown/{ship_id}{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def get_login_award(self):
+        url = f'{self._server}active/getLoginAward/c3ecc6250c89e88d83832e3395efb973/{self._build_url_tail()}'
         return self._build_get(url)
 
     def _build_get(self, url):
