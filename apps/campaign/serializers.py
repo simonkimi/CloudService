@@ -1,51 +1,39 @@
-from rest_framework import serializers
-from django.db.models import Sum
-from .models import ExploreModel
 from time import time
+from django.db.models import Sum
+from rest_framework import serializers
+from .models import CampaignModel
 
 
-class ExploreListSerializer(serializers.ModelSerializer):
+class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ExploreModel
-        fields = (
-            'map',
-            'create_time',
-            'oil',
-            'ammo',
-            'steel',
-            'aluminium',
-            'dd_cube',
-            'cl_cube',
-            'bb_cube',
-            'cv_cube',
-            'ss_cube',
-            'fast_repair',
-            'fast_build',
-            'build_map',
-            'equipment_map',
-        )
+        model = CampaignModel
+        fields = ('map', 'oil', 'ammo', 'steel', 'aluminium',
+                  'dd_cube', 'cl_cube', 'bb_cube', 'cv_cube', 'ss_cube')
 
 
 class StatisticSerializer(serializers.Serializer):
-    start_time = serializers.IntegerField(help_text='开始时间', write_only=True, default=0, allow_null=True)
+    start_time = serializers.IntegerField(help_text='开始时间', default=0, write_only=True, allow_null=True)
     end_time = serializers.IntegerField(help_text='结束时间', write_only=True, default=time, allow_null=True)
+
+    def validate(self, attrs):
+        attrs['max'] = max(attrs['end_time'], attrs['start_time'])
+        attrs['min'] = min(attrs['end_time'], attrs['start_time'])
+        return attrs
 
     def save(self, **kwargs):
         user = self.context['user']
-        print(self.validated_data)
-        min_time = min(self.validated_data['end_time'], self.validated_data['start_time'])
-        max_time = max(self.validated_data['end_time'], self.validated_data['start_time'])
 
-        queryset = ExploreModel.objects \
+        queryset = CampaignModel.objects \
             .filter(user=user) \
-            .filter(create_time__gte=min_time) \
-            .filter(create_time__lt=max_time)
+            .filter(create_time__gte=self.validated_data['min']) \
+            .filter(create_time__lt=self.validated_data['max'])
 
         sums = queryset.aggregate(
             Sum('oil'), Sum('ammo'), Sum('steel'), Sum('aluminium'),
             Sum('dd_cube'), Sum('cl_cube'), Sum('bb_cube'), Sum('cv_cube'), Sum('ss_cube'),
             Sum('fast_repair'), Sum('fast_build'), Sum('build_map'), Sum('equipment_map'),
         )
+
         return {
             'oil': sums['oil__sum'] or 0,
             'ammo': sums['ammo__sum'] or 0,
