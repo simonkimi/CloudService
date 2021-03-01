@@ -103,6 +103,22 @@ class NetSender:
         url = f'{self._server}active/getLoginAward/c3ecc6250c89e88d83832e3395efb973/{self._build_url_tail()}'
         return self._build_get(url)
 
+    def pvp_get_list(self):
+        url = f'{self._server}pvp/getChallengeList/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def pvp_spy(self, uid, fleet):
+        url = f'{self._server}pvp/spy/{uid}/{fleet}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def pvp_fight(self, uid, fleet, formats):
+        url = f'{self._server}pvp/challenge/{uid}/{fleet}/{formats}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def pvp_get_result(self, night_fight):
+        url = f'{self._server}pvp/getWarResult/{night_fight}/{self._build_url_tail()}'
+        return self._build_get(url)
+
     def _build_get(self, url):
         try:
             data = self._requests.get(url=url, cookies=self._cookies, headers=NORMAL_HEADERS, timeout=20).content

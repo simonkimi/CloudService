@@ -8,6 +8,7 @@ from .net_sender import NetSender, LoginPasswordException, ServerCloseException,
 from operate.models import OperateModel
 from .constant import CAMPAIGN_MAP
 from repair.models import RepairModel
+from pvp.models import PvpModel
 
 
 class ExploreUser:
@@ -56,40 +57,81 @@ class ExploreMain:
         if not self._parse_user_data():
             return
 
-        self._check_repair()
+        self._check_pvp(1, 1, 1)
+
+    def _check_pvp(self, fleet, formats, night_fight):
+        try:
+            time.sleep(2)
+            pvp_list = self.sender.pvp_get_list()
+            for pvp_person in pvp_list['list']:
+                if pvp_person['resultLevel'] != 0:
+                    continue
+                pvp_uid = pvp_person['uid']
+                pvp_username = pvp_person['username']
+                pvp_fleet_name = pvp_person['fleetName']
+                pvp_ship_name = [i["title"] for i in pvp_person['ships']]
+                time.sleep(2)
+                self.sender.pvp_spy(uid=pvp_uid, fleet=fleet)
+                time.sleep(2)
+                fight_data = self.sender.pvp_fight(uid=pvp_uid, fleet=fleet, formats=formats)
+                time.sleep(10)
+                if fight_data['warReport']['canDoNightWar'] == 1 and night_fight == 1:
+                    result_data = self.sender.pvp_get_result(night_fight=1)
+                    time.sleep(5)
+                else:
+                    result_data = self.sender.pvp_get_result(night_fight=0)
+                result_level = result_data['warResult']['resultLevel']
+                Log.i('_check_pvp', "演习:", pvp_username, pvp_fleet_name, result_level)
+                PvpModel.objects.create(
+                    user=self.user_base,
+                    username=pvp_username,
+                    uid=pvp_uid,
+                    fleet_name=pvp_fleet_name,
+                    ships='||'.join(pvp_ship_name),
+                    result=result_level
+                )
+        except NetWorkException as e:
+            self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
+        except Exception as e:
+            self._create_operate(user=self.user_base, desc=f'演习出现错误: {str(e)}', desc_type=2)
 
     def _check_repair(self):
-        # 出浴船只
-        for repair_dock in self.user.user_data['repairDockVo']:
-            if 'endTime' in repair_dock and repair_dock["endTime"] < time.time():
-                time.sleep(2)
-                data = self.sender.repair_complete(repair_dock["id"], repair_dock["shipId"])
-                if "repairDockVo" in data:
-                    self.user.user_data["repairDockVo"] = data["repairDockVo"]
-                if "shipVO" in data:
-                    self.user.user_ship[int(repair_dock["shipId"])] = data["shipVO"]
-        # 获取需要泡澡船只
-        repairing_data = [int(dock['shipId']) for dock in self.user.user_data["repairDockVo"] if
-                          "shipId" in dock and dock["endTime"] > time.time()]
-        wait_shower = []
-        for ship_id, ship_data in self.user.user_ship.items():
-            if ship_id in repairing_data:
-                continue
-            if "fleet_id" in ship_data and int(ship_data["fleet_id"]) > 4:
-                continue
-            if ship_data["battleProps"]["hp"] != ship_data["battlePropsMax"]["hp"]:
-                wait_shower.append(int(ship_data["id"]))
+        try:
+            # 出浴船只
+            for repair_dock in self.user.user_data['repairDockVo']:
+                if 'endTime' in repair_dock and repair_dock["endTime"] < time.time():
+                    time.sleep(2)
+                    data = self.sender.repair_complete(repair_dock["id"], repair_dock["shipId"])
+                    if "repairDockVo" in data:
+                        self.user.user_data["repairDockVo"] = data["repairDockVo"]
+                    if "shipVO" in data:
+                        self.user.user_ship[int(repair_dock["shipId"])] = data["shipVO"]
+            # 获取需要泡澡船只
+            repairing_data = [int(dock['shipId']) for dock in self.user.user_data["repairDockVo"] if
+                              "shipId" in dock and dock["endTime"] > time.time()]
+            wait_shower = []
+            for ship_id, ship_data in self.user.user_ship.items():
+                if ship_id in repairing_data:
+                    continue
+                if "fleet_id" in ship_data and int(ship_data["fleet_id"]) > 4:
+                    continue
+                if ship_data["battleProps"]["hp"] != ship_data["battlePropsMax"]["hp"]:
+                    wait_shower.append(int(ship_data["id"]))
 
-        for dock in self.user.user_data["repairDockVo"]:
-            if dock["locked"] == 0 and "endTime" not in dock and len(wait_shower) > 0:
-                time.sleep(3)
-                self.sender.shower(wait_shower[0])
-                time.sleep(3)
-                self.sender.rubdown(wait_shower[0])
-                name = self.user.user_ship[int(wait_shower[0])]["title"]
-                RepairModel.objects.create(user=self.user_base, name=name)
-                del wait_shower[0]
-                Log.i('_check_repair', "泡澡&搓澡: " + self.user.user_ship[int(wait_shower[0])]["title"])
+            for dock in self.user.user_data["repairDockVo"]:
+                if dock["locked"] == 0 and "endTime" not in dock and len(wait_shower) > 0:
+                    time.sleep(3)
+                    self.sender.shower(wait_shower[0])
+                    time.sleep(3)
+                    self.sender.rubdown(wait_shower[0])
+                    name = self.user.user_ship[int(wait_shower[0])]["title"]
+                    RepairModel.objects.create(user=self.user_base, name=name)
+                    del wait_shower[0]
+                    Log.i('_check_repair', "泡澡&搓澡: " + self.user.user_ship[int(wait_shower[0])]["title"])
+        except NetWorkException as e:
+            self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
+        except Exception as e:
+            self._create_operate(user=self.user_base, desc=f'洗澡出现错误: {str(e)}', desc_type=2)
 
     def _check_campaign(self, maps, battle_format):
         try:
