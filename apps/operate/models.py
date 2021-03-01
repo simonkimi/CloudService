@@ -13,3 +13,6 @@ class OperateModel(models.Model):
     create_time = models.IntegerField(default=time, blank=True)
     desc = models.TextField()
     desc_type = models.IntegerField(choices=operate_choice, default=0)
+
+    class Meta:
+        db_table = 'operate'

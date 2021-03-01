@@ -28,3 +28,11 @@ URL_VERSION = 'http://version.jr.moefantasy.com/' \
 
 URL_IOS_VERSION = 'http://version.jr.moefantasy.com/' \
                   'index/checkVer/4.1.0/100015/2&version=4.1.0&channel=100015&market=2'
+
+CAMPAIGN_MAP = {
+    '101': "驱逐简单战役", '102': "驱逐困难战役",
+    '201': "巡洋简单战役", '202': "巡洋困难战役",
+    '301': "战列简单战役", '302': "战列困难战役",
+    '401': "航母简单战役", '402': "航母困难战役",
+    '501': "潜艇简单战役", '502': "潜艇困难战役"
+}

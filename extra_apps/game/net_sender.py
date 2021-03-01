@@ -35,6 +35,15 @@ class NetSender:
         self._password = password
         self._server_index = server
         self._server = SERVER_LIST[server]
+        self._requests = requests.session()
+
+        # self._requests.proxies = {
+        #     'http': 'http://127.0.0.1:8888',
+        #     'https': 'http://127.0.0.1:8888'
+        # }
+        # self._requests.verify = False
+
+
 
     def get_user_data(self):
         url = f'{self._server}api/initGame?&crazy=0{self._build_url_tail()}'
@@ -52,19 +61,52 @@ class NetSender:
         url = f'{self._server}explore/start/{fleet}/{maps}/{self._build_url_tail()}'
         return self._build_get(url)
 
+    def instant_repair(self, ships: [int]):
+        url = f'{self._server}boat/instantRepairShips/[{",".join([str(i) for i in ships])}]/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def get_campaign_data(self):
+        url = f'{self._server}campaign/getUserData/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def campaign_get_fleet(self, maps):
+        url = f'{self._server}campaign/getFleet/{maps}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def supply(self, ships):
+        url = f'{self._server}boat/supplyBoats/[{",".join([str(x) for x in ships])}]/0/0/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def campaign_get_spy(self, maps):
+        url = f'{self._server}campaign/spy/{maps}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def campaign_fight(self, maps, battle_format):
+        url = f'{self._server}campaign/challenge/{maps}/{battle_format}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def campaign_get_result(self, night_fight):
+        url = f'{self._server}campaign/getWarResult/{night_fight}/{self._build_url_tail()}'
+        return self._build_get(url)
+
     def _build_get(self, url):
-        data = requests.get(url=url, cookies=self._cookies, headers=NORMAL_HEADERS, timeout=20).content
-        json_data = json.loads(zlib.decompress(data))
-        if 'eid' in json_data:
-            raise NetWorkException(code=json_data['eid'], url=url)
-        return json_data
+        try:
+            data = self._requests.get(url=url, cookies=self._cookies, headers=NORMAL_HEADERS, timeout=20).content
+            if data[0] == 0x78 and data[1] == 0xDA:
+                data = zlib.decompress(data)
+            json_data = json.loads(data)
+            if 'eid' in json_data:
+                raise NetWorkException(code=json_data['eid'], url=url)
+            return json_data
+        except Exception as e:
+            raise Exception(f'{str(url)}, {str(e)}')
 
     def login(self):
         url_version = URL_VERSION if self._server_index <= 3 else URL_IOS_VERSION
         self._channel = '100011' if self._server_index <= 3 else '100015'
         # 获取版本信息
         try:
-            rep = requests.get(url=url_version).json()
+            rep = self._requests.get(url=url_version).json()
             if 'version' not in rep:
                 raise ServerCloseException()
 
@@ -85,7 +127,7 @@ class NetSender:
                 "password": self._password,
                 "username": self._username
             }).replace(" ", "")
-            rsp = requests.post(url=url_token, data=login_data, headers=self._build_headers(url_token)).json()
+            rsp = self._requests.post(url=url_token, data=login_data, headers=self._build_headers(url_token)).json()
             if "error" in rsp and int(rsp["error"]) != 0:
                 if int(rsp['error']) == 21003:
                     raise LoginPasswordException()
@@ -99,7 +141,7 @@ class NetSender:
         try:
             url_info = f'{hm_login_server}1.0/get/userInfo/@self'
             data = json.dumps({"access_token": token})
-            rsp = requests.post(url=url_token, data=data, headers=self._build_headers(url_info)).json()
+            rsp = self._requests.post(url=url_token, data=data, headers=self._build_headers(url_info)).json()
             if "error" in rsp and int(rsp["error"]) != 0:
                 raise Exception(f'验证Token出错:{rsp["errmsg"]}')
         except Exception as e:
@@ -109,7 +151,7 @@ class NetSender:
         # 获取用户Cookies
         try:
             url_login = f'{login_server}index/hmLogin/{token}{self._build_url_tail()}'
-            rsp = requests.get(url=url_login)
+            rsp = self._requests.get(url=url_login)
             self._cookies = rsp.cookies.get_dict()
             rsp_data = json.loads(zlib.decompress(rsp.content))
             uid = rsp_data['userId']
@@ -138,7 +180,7 @@ class NetSender:
         }
         random.seed()
         url_login_1 = f'{login_server}index/login/{uid}?&{urlencode(data_dict)}'
-        requests.get(url=url_login_1)
+        self._requests.get(url=url_login_1)
 
     def _build_url_tail(self, timestamp=str(int(round(time.time() * 1000)))):
         md5_raw = timestamp + 'ade2688f1904e9fb8d2efdb61b5e398a'

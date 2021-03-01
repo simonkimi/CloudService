@@ -1,10 +1,12 @@
 import time
 
 from explore.models import ExploreModel
+from campaign.models import CampaignModel
 from log import Log
 from user.models import User, UserProfile
 from .net_sender import NetSender, LoginPasswordException, ServerCloseException, NetWorkException
 from operate.models import OperateModel
+from .constant import CAMPAIGN_MAP
 
 
 class ExploreUser:
@@ -53,7 +55,40 @@ class ExploreMain:
         if not self._parse_user_data():
             return
 
-        self._check_explore()
+        self._check_campaign('202', 1)
+
+    def _check_campaign(self, maps, battle_format):
+        try:
+            while True:
+                time.sleep(3)
+                campaign_count = self.sender.get_campaign_data()
+                if campaign_count['passInfo']['remainNum'] == 0:
+                    break
+                # 开始战役
+                fleet_data = self.sender.campaign_get_fleet(maps=maps)
+                valid_fleet = [int(i) for i in fleet_data['campaignLevelFleet'] if int(i) != 0]
+                if len(valid_fleet) == 0:
+                    self._create_operate(self.user_base, desc='无法获取战役队伍, 已关闭战役开关', desc_type=2)
+                    self.user_profile.campaign_map = 0
+                    self.user_profile.save(update_fields=['campaign_map'])
+                    break
+                self._fast_repair(valid_fleet)
+                time.sleep(3)
+                self.sender.supply(valid_fleet)
+                time.sleep(3)
+                self.sender.campaign_get_spy(maps=maps)
+                time.sleep(2)
+                campaign_data = self.sender.campaign_fight(maps, battle_format)
+                time.sleep(10)
+                campaign_result = self.sender.campaign_get_result(campaign_data['warReport']['canDoNightWar'])
+                self._build_campaign_award(CAMPAIGN_MAP[str(maps)], campaign_result['newAward'])
+                Log.i('_check_campaign', self.username, CAMPAIGN_MAP[str(maps)], "完成")
+                for ship in campaign_result['shipVO']:
+                    self.user.user_ship[ship['id']] = ship
+        except NetWorkException as e:
+            self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
+        except Exception as e:
+            self._create_operate(user=self.user_base, desc=f'战役出现错误: {str(e)}', desc_type=2)
 
     def _check_explore(self):
         last_explore_data = None
@@ -65,11 +100,10 @@ class ExploreMain:
                     fleet_id = explore['fleetId']
                     time.sleep(3)
                     explore_result = self.sender.get_explore(explore_id)
-
                     map_name = explore_id.replace('000', '-')
                     success = explore_result['bigSuccess']
                     Log.i("_check_explore", self.username, "远征", map_name, f'{"大" if success else ""}成功')
-                    if 'newAward' in explore_result and len('newAward') != 0:
+                    if 'newAward' in explore_result and len(explore_result['newAward']) != 0:
                         self._build_explore_award(map_name, success, explore_result['newAward'])
                     time.sleep(3)
                     rsp = self.sender.start_explore(maps=explore_id, fleet=fleet_id)
@@ -101,6 +135,33 @@ class ExploreMain:
             fast_repair=award['541'] if '541' in award else 0,
             equipment_map=award['741'] if '741' in award else 0,
         )
+
+    def _build_campaign_award(self, campaign_map, award):
+        CampaignModel.objects.create(
+            user=self.user_base,
+            map=campaign_map,
+            oil=award['2'] if '2' in award else 0,
+            ammo=award['3'] if '3' in award else 0,
+            steel=award['4'] if '4' in award else 0,
+            aluminium=award['9'] if '9' in award else 0,
+            fast_build=award['141'] if '141' in award else 0,
+            build_map=award['241'] if '241' in award else 0,
+            fast_repair=award['541'] if '541' in award else 0,
+            equipment_map=award['741'] if '741' in award else 0,
+        )
+
+    def _fast_repair(self, fleet: [int]):
+        user_ship = self.user.user_ship
+        need_repair = [i for i in fleet if
+                       user_ship[i]['battleProps']['hp'] * 4 < user_ship[i]['battlePropsMax']['hp']]
+
+        if len(need_repair) != 0:
+            time.sleep(3)
+            repair_data = self.sender.instant_repair(ships=need_repair)
+            # 更新船只信息
+            if "shipVOs" in repair_data:
+                for ship in repair_data['shipVOs']:
+                    self.user.user_ship[ship['id']] = ship
 
     def _parse_user_data(self) -> bool:
         try:

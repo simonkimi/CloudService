@@ -19,7 +19,7 @@ class Logger:
             sh = logging.StreamHandler()
             sh.setFormatter(fmt)
             sh.setLevel(clevel)
-            # 设置文件日志
+            # # 设置文件日志
             fh = logging.FileHandler(path)
             fh.setFormatter(fmt)
             fh.setLevel(flevel)
@@ -29,19 +29,19 @@ class Logger:
             pass
 
     def d(self, tag: str, *kwargs):
-        self.logger.debug(tag + ' ' + ''.join([str(x) for x in kwargs]))
+        self.logger.debug(tag + ' ' + ' '.join([str(x) for x in kwargs]))
 
     def i(self, tag: str, *kwargs):
-        self.logger.debug(tag + ' ' + ''.join([str(x) for x in kwargs]))
+        self.logger.info(tag + ' ' + ' '.join([str(x) for x in kwargs]))
 
     def w(self, tag: str, *kwargs):
-        self.logger.debug(tag + ' ' + ''.join([str(x) for x in kwargs]))
+        self.logger.warning(tag + ' ' + ' '.join([str(x) for x in kwargs]))
 
     def e(self, tag: str, *kwargs):
-        self.logger.debug(tag + ' ' + ''.join([str(x) for x in kwargs]))
+        self.logger.error(tag + ' ' + ' '.join([str(x) for x in kwargs]))
 
     def c(self, tag: str, *kwargs):
-        self.logger.debug(tag + ' ' + ''.join([str(x) for x in kwargs]))
+        self.logger.critical(tag + ' ' + ' '.join([str(x) for x in kwargs]))
 
 
 Log = Logger()
