@@ -68,7 +68,6 @@ class ExploreMain:
                     continue
                 pvp_uid = pvp_person['uid']
                 pvp_username = pvp_person['username']
-                pvp_fleet_name = pvp_person['fleetName']
                 pvp_ship_name = [i["title"] for i in pvp_person['ships']]
                 time.sleep(2)
                 self.sender.pvp_spy(uid=pvp_uid, fleet=fleet)
@@ -81,12 +80,11 @@ class ExploreMain:
                 else:
                     result_data = self.sender.pvp_get_result(night_fight=0)
                 result_level = result_data['warResult']['resultLevel']
-                Log.i('_check_pvp', "演习:", pvp_username, pvp_fleet_name, result_level)
+                Log.i('_check_pvp', "演习:", pvp_username, result_level)
                 PvpModel.objects.create(
                     user=self.user_base,
                     username=pvp_username,
                     uid=pvp_uid,
-                    fleet_name=pvp_fleet_name,
                     ships='||'.join(pvp_ship_name),
                     result=result_level
                 )
