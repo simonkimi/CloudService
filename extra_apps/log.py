@@ -7,11 +7,11 @@ class Logger:
     def __init__(self, clevel=logging.DEBUG, flevel=logging.DEBUG):
         try:
             times = time.strftime("%m-%d-%H-%M-%S", time.localtime())
-            path = 'log/' + times + '.log'
-            if not os.path.exists('log'):
-                os.mkdir('log')
-            with open(path, 'w') as f:
-                f.write('')
+            # path = 'log/' + times + '.log'
+            # if not os.path.exists('log'):
+            #     os.mkdir('log')
+            # with open(path, 'w') as f:
+            #     f.write('')
             self.logger = logging.getLogger('Main')
             self.logger.setLevel(logging.INFO)
             fmt = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s', '%Y-%m-%d %H:%M:%S')
@@ -19,10 +19,10 @@ class Logger:
             sh = logging.StreamHandler()
             sh.setFormatter(fmt)
             sh.setLevel(clevel)
-            # # 设置文件日志
-            fh = logging.FileHandler(path)
-            fh.setFormatter(fmt)
-            fh.setLevel(flevel)
+            # # # 设置文件日志
+            # fh = logging.FileHandler(path)
+            # fh.setFormatter(fmt)
+            # fh.setLevel(flevel)
             self.logger.addHandler(sh)
             self.logger.addHandler(fh)
         except:

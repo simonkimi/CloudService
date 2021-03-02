@@ -374,14 +374,9 @@ class ExploreMain:
         except Exception as e:
             self._create_operate(user=self.user_base, desc=f'登录失败: {str(e)}, 等待一个小时后再登录', desc_type=2)
             return False
-        self._wait_one_hour()
         self._create_operate(user=self.user_base, desc=f'登录游戏, 准备开始任务', desc_type=0)
         return True
 
     def _create_operate(self, user, desc, desc_type):
         print('Operate', self.username or '未登录', self.user_profile.username, desc)
         OperateModel.objects.create(user=user, desc=desc, desc_type=desc_type)
-
-    def _wait_one_hour(self):
-        self.user_profile.next_time = int(time.time()) + 60 * 60
-        self.user_profile.save(update_fields=['next_time'])

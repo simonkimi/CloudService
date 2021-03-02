@@ -1,19 +1,14 @@
-a = {
-    'a': {
-        "a": 1
-    },
-    'b': {
-        "a": 2
-    },
-    'c': {
-        "a": 4
-    },
-    'd': {
-        "a": 1
-    },
-    'e': {
-        "a": 6
-    },
-}
+import os
 
-print(sum([i['a'] for i in a.values()]))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE',
+                      'cloudService.settings')
+import django
+
+django.setup()
+
+from user.models import User
+
+user = User.objects.get(username='simon_xu')
+user_2 = User.objects.all()[0]
+
+print(user == user_2)

@@ -2,6 +2,4 @@ Django==3.1.7
 django-filter==2.4.0
 djangorestframework==3.12.2
 requests==2.25.1
-
-
-http://s2.jr.moefantasy.com/boat/supplyBoats/[2407,133,7033,454,422,112]/0/0/&t=1614580168411&e=cc571fffe73e88aa3d2bb66dec76e716&gz=1&market=2&channel=100011&version=5.2.0, Error -3 while decompressing data: incorrect header check
+celery~=5.0.5
