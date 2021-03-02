@@ -25,17 +25,6 @@ class ExploreUser:
         self.uid = None
         self.login_award = 0
 
-        self.fleet = {
-            0: [0, 0, 0, 0, 0, 0],
-            1: [0, 0, 0, 0, 0, 0],
-            2: [0, 0, 0, 0, 0, 0],
-            3: [0, 0, 0, 0, 0, 0],
-            4: [0, 0, 0, 0, 0, 0],
-            5: [0, 0, 0, 0, 0, 0],
-            6: [0, 0, 0, 0, 0, 0],
-            7: [0, 0, 0, 0, 0, 0]
-        }
-
 
 class ExploreMain:
     def __init__(self, user: User):
@@ -268,7 +257,8 @@ class ExploreMain:
 
     def login(self) -> bool:
         self.user_profile.last_time = time.time()
-        self.user_profile.save(update_fields=['last_time'])
+        self.user_profile.username = self.username
+        self.user_profile.save(update_fields=['last_time', 'username'])
         try:
             self.sender.login()
         except LoginPasswordException:

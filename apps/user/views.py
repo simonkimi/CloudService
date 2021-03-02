@@ -5,7 +5,8 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.mixins import UpdateModelMixin
 from .models import User
-from .serializers import UserLoginSerializer, UserRegisterSerializer, UserSerializer
+from .serializers import UserLoginSerializer, UserRegisterSerializer, UserSerializer, UserSettingSerializer, \
+    UserProfileSerializer
 
 
 class UserLoginViewSets(GenericViewSet):
@@ -18,6 +19,20 @@ class UserLoginViewSets(GenericViewSet):
         user: User = request.user
         serializers = self.get_serializer(user)
         return Response(serializers.data)
+
+    @action(methods=['POST'], detail=False)
+    def setting(self, request):
+        serializers = self.get_serializer(data=request.data, context={'user': request.user})
+        serializers.is_valid(raise_exception=True)
+        profile = serializers.save()
+        return Response(UserProfileSerializer(profile).data)
+
+    def get_serializer_class(self):
+        if self.action in ['mine']:
+            return UserSerializer
+        elif self.action in ['setting']:
+            return UserSettingSerializer
+        return UserSettingSerializer
 
 
 class UserViewSets(GenericViewSet):

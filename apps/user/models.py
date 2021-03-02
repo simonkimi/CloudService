@@ -28,7 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, models.CASCADE, related_name='user_profile')
-    username = models.CharField(max_length=24, help_text='用户名')
+    username = models.CharField(max_length=128, default='', help_text='用户名')
 
     server = models.IntegerField(help_text='服务器')
 
@@ -56,10 +56,16 @@ class UserProfile(models.Model):
     repair_switch = models.BooleanField(default=False, help_text='修理开关')
 
     build_switch = models.BooleanField(default=False, help_text='建造开关')
-    build_resource = models.CharField(default="30|30|30|30", max_length=128, help_text='建造资源')
+    build_oil = models.IntegerField(default=30, help_text='油')
+    build_ammo = models.IntegerField(default=30, help_text='弹')
+    build_steel = models.IntegerField(default=30, help_text='钢')
+    build_aluminium = models.IntegerField(default=30, help_text='铝')
 
     equipment_switch = models.BooleanField(default=False, help_text='建造开关')
-    equipment_resource = models.CharField(default="30|30|30|30", max_length=128, help_text='建造资源')
+    equipment_oil = models.IntegerField(default=30, help_text='油')
+    equipment_ammo = models.IntegerField(default=30, help_text='弹')
+    equipment_steel = models.IntegerField(default=30, help_text='钢')
+    equipment_aluminium = models.IntegerField(default=30, help_text='铝')
 
     dorm_event = models.BooleanField(default=False, help_text='摸头开关')
 

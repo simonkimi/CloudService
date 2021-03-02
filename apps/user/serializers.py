@@ -74,8 +74,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'pvp_fleet',
             'pvp_format',
             'pvp_night',
-            'pvp_last',
             'repair_switch',
+            'build_switch',
+            'build_oil',
+            'build_ammo',
+            'build_steel',
+            'build_aluminium',
+            'equipment_switch',
+            'equipment_oil',
+            'equipment_ammo',
+            'equipment_steel',
+            'equipment_aluminium',
+            'dorm_event'
         )
 
 
@@ -88,42 +98,46 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserSettingSerializer(serializers.Serializer):
-    server = serializers.IntegerField(allow_null=True)
+    server = serializers.IntegerField(allow_null=True, required=False)
 
-    switch = serializers.BooleanField(allow_null=True)
+    switch = serializers.BooleanField(allow_null=True, required=False)
 
-    explore_switch = serializers.BooleanField(allow_null=True)
+    explore_switch = serializers.BooleanField(allow_null=True, required=False)
 
-    campaign_map = serializers.IntegerField(allow_null=True)
-    campaign_format = serializers.IntegerField(allow_null=True)
+    campaign_map = serializers.IntegerField(allow_null=True, required=False)
+    campaign_format = serializers.IntegerField(allow_null=True, required=False)
 
-    pvp_fleet = serializers.IntegerField(allow_null=True)
-    pvp_format = serializers.IntegerField(allow_null=True)
-    pvp_night = serializers.BooleanField(allow_null=True)
+    pvp_fleet = serializers.IntegerField(allow_null=True, required=False)
+    pvp_format = serializers.IntegerField(allow_null=True, required=False)
+    pvp_night = serializers.BooleanField(allow_null=True, required=False)
 
-    repair_switch = serializers.BooleanField(allow_null=True)
+    repair_switch = serializers.BooleanField(allow_null=True, required=False)
 
-    build_switch = serializers.BooleanField(allow_null=True)
-    build_oil = serializers.IntegerField(allow_null=True)
-    build_ammo = serializers.IntegerField(allow_null=True)
-    build_steel = serializers.IntegerField(allow_null=True)
-    build_aluminium = serializers.IntegerField(allow_null=True)
+    build_switch = serializers.BooleanField(allow_null=True, required=False)
+    build_oil = serializers.IntegerField(allow_null=True, required=False)
+    build_ammo = serializers.IntegerField(allow_null=True, required=False)
+    build_steel = serializers.IntegerField(allow_null=True, required=False)
+    build_aluminium = serializers.IntegerField(allow_null=True, required=False)
 
-    equipment_switch = serializers.BooleanField(allow_null=True)
-    equipment_oil = serializers.IntegerField(allow_null=True)
-    equipment_ammo = serializers.IntegerField(allow_null=True)
-    equipment_steel = serializers.IntegerField(allow_null=True)
-    equipment_aluminium = serializers.IntegerField(allow_null=True)
+    equipment_switch = serializers.BooleanField(allow_null=True, required=False)
+    equipment_oil = serializers.IntegerField(allow_null=True, required=False)
+    equipment_ammo = serializers.IntegerField(allow_null=True, required=False)
+    equipment_steel = serializers.IntegerField(allow_null=True, required=False)
+    equipment_aluminium = serializers.IntegerField(allow_null=True, required=False)
 
-    dorm_event = serializers.BooleanField(allow_null=True)
+    dorm_event = serializers.BooleanField(allow_null=True, required=False)
 
-    @staticmethod
-    def _check_attrs_exist(attrs, *args):
-        try:
-            if index := [i in attrs for i in args].index(False):
-                raise serializers.ValidationError(f'不存在:{args[index]}')
-        except ValueError:
-            pass
+    dependence = {
+        'server': [],
+        'switch': [],
+        'explore_switch': [],
+        'campaign_map': ['campaign_format'],
+        'pvp_fleet': ['pvp_format', 'pvp_night'],
+        'repair_switch': [],
+        'build_switch': ['build_oil', 'build_ammo', 'build_steel', 'build_aluminium'],
+        'equipment_switch': ['equipment_oil', 'equipment_ammo', 'equipment_steel', 'equipment_aluminium'],
+        'dorm_event': [],
+    }
 
     @staticmethod
     def validate_server(value):
@@ -153,23 +167,26 @@ class UserSettingSerializer(serializers.Serializer):
     def validate(self, attrs):
         if 'user' not in self.context:
             raise serializers.ValidationError('未提供用户')
-        if 'campaign_map' in attrs:
-            self._check_attrs_exist(attrs, 'campaign_format')
-        if 'pvp_fleet' in attrs:
-            self._check_attrs_exist(attrs, 'pvp_format', 'pvp_night')
-        if 'build_switch' in attrs:
-            self._check_attrs_exist(attrs, 'build_oil', 'build_ammo', 'build_steel', 'build_aluminium')
-        if 'equipment_switch' in attrs:
-            self._check_attrs_exist(attrs, 'equipment_oil', 'equipment_ammo', 'equipment_steel', 'equipment_aluminium')
+        for key, dependencies in self.dependence.items():
+            if key in attrs and attrs[key] is not None:
+                try:
+                    index = [i in attrs for i in dependencies].index(False)
+                    raise serializers.ValidationError(f'{dependencies[index]}未提供')
+                except ValueError:
+                    pass
+        return attrs
 
     def save(self, **kwargs):
         profile = UserProfile.objects.get(user=self.context['user'])
         attrs = self.validated_data
-
-        check = [
-            {'key': 'switch'},
-            {'key': 'server'},
-            {'key': 'explore_switch'},
-            {'key': 'repair_switch'},
-            {'key': 'dorm_event'},
-        ]
+        print(attrs)
+        update_fields = []
+        for key, dependencies in self.dependence.items():
+            if key in attrs and attrs[key] is not None:
+                profile.__setattr__(key, attrs[key])
+                update_fields.append(key)
+                for sub_key in dependencies:
+                    update_fields.append(sub_key)
+                    profile.__setattr__(sub_key, attrs[sub_key])
+        profile.save(update_fields=update_fields)
+        return profile
