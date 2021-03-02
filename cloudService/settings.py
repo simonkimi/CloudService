@@ -49,7 +49,9 @@ INSTALLED_APPS = [
     'pvp',
     'campaign',
     'repair',
-    'operate'
+    'operate',
+    'build_ship',
+    'build_equipment'
 ]
 
 REST_FRAMEWORK = {

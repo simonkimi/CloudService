@@ -9,8 +9,7 @@ class UserManager(BaseUserManager):
         user.is_superuser = is_superuser
         user.set_password(password)
         user.save()
-        user_profile = UserProfile.objects.create(user=user, server=server)
-        user_profile.save()
+        UserProfile.objects.create(user=user, server=server)
         return user
 
     def create_superuser(self, username, password):

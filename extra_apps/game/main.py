@@ -1,29 +1,33 @@
 import time
+from os import name
 
 from explore.models import ExploreModel
 from campaign.models import CampaignModel
 from log import Log
 from user.models import User, UserProfile
 from .net_sender import NetSender, LoginPasswordException, ServerCloseException, NetWorkException
-from operate.models import OperateModel
 from .constant import CAMPAIGN_MAP
+from operate.models import OperateModel
 from repair.models import RepairModel
 from pvp.models import PvpModel
+from build_ship.models import BuildShipModel
+from build_equipment.models import BuildEquipmentModel
 
 
 class ExploreUser:
     def __init__(self):
-        self.user_ship = {}
-        self.task_info = {}
         self.user_data = {}
-        self.unlockShip = []
-        self.shipNumTop = 0
-        self.dock = []
-        self.equipment_dock = []
-        self.equipment_num = 0
+
+        self.user_ship = {}
+        self.user_equipment = {}
+
+        self.unlock_ship = []
+        self.unlock_equipment = []
+
+        self.task_info = {}
+
+        self.ship_num_top = 0
         self.equipment_top = 0
-        self.uid = None
-        self.login_award = 0
 
 
 class ExploreMain:
@@ -46,7 +50,7 @@ class ExploreMain:
         if not self._parse_user_data():
             return
 
-        self._check_pvp(1, 1, 1)
+        self._check_build_equipment(100, 110, 120, 130)
 
     def _check_pvp(self, fleet, formats, night_fight):
         try:
@@ -226,6 +230,62 @@ class ExploreMain:
                 for ship in repair_data['shipVOs']:
                     self.user.user_ship[ship['id']] = ship
 
+    def _check_build_ship(self, oil, ammo, steel, aluminium):
+        try:
+            for dock in self.user.user_data['dockVo']:
+                if len(self.user.user_ship) >= self.user.ship_num_top:
+                    return True
+                if dock['locked'] == 0:
+                    if 'endTime' in dock:
+                        if dock['endTime'] > time.time():
+                            continue
+                        time.sleep(3)
+                        ship = self.sender.get_boat(dock['id'])
+                        if is_new := ship['shipVO']['shipCid'] not in self.user.unlock_ship:
+                            time.sleep(2)
+                            self.sender.lock_ship(ship_id=ship['shipVO']['id'])
+                        self.user.user_ship[int(ship['shipVO']['id'])] = ship['shipVO']
+                        BuildShipModel.objects.create(
+                            user=self.user_base,
+                            name=ship['shipVO']['title'],
+                            cid=ship['shipVO']['shipCid'],
+                            is_new=is_new
+                        )
+                    time.sleep(3)
+                    self.sender.build_boat(dock['id'], oil, ammo, steel, aluminium)
+        except NetWorkException as e:
+            self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
+            return False
+        except Exception as e:
+            self._create_operate(user=self.user_base, desc=f'建造船只出现错误: {str(e)}', desc_type=2)
+            return False
+
+    def _check_build_equipment(self, oil, ammo, steel, aluminium):
+        try:
+            for dock in self.user.user_data['equipmentDockVo']:
+                if sum([i['num'] for i in self.user.user_equipment.values()]) >= self.user.equipment_top:
+                    return True
+                if dock['locked'] == 0:
+                    if 'endTime' in dock:
+                        if dock['endTime'] > time.time():
+                            continue
+                        time.sleep(3)
+                        equipment = self.sender.get_equipment(dock['id'])
+                        self.user.user_equipment[int(equipment['equipmentVo']['equipmentCid'])] = equipment[
+                            'equipmentVo']
+                        BuildEquipmentModel.objects.create(
+                            user=self.user_base,
+                            cid=int(equipment['equipmentVo']['equipmentCid'])
+                        )
+                    time.sleep(3)
+                    self.sender.build_equipment(dock['id'], oil, ammo, steel, aluminium)
+        except NetWorkException as e:
+            self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
+            return False
+        except Exception as e:
+            self._create_operate(user=self.user_base, desc=f'开发装备出现错误: {str(e)}', desc_type=2)
+            return False
+
     def _parse_user_data(self) -> bool:
         try:
             # 获取用户数据
@@ -234,6 +294,8 @@ class ExploreMain:
                 self._create_operate(user=self.user_base, desc=f'无法获取userVo, 可能绑错区, 自动关闭开关', desc_type=2)
                 return False
             self.username = self.user.user_data["userVo"]["username"]
+            self.user_profile.username = self.username
+            self.user_profile.save(update_fields=['username'])
             Log.i('ParseUserData', "当前用户:", self.username, '登录成功')
 
             # 解析船只数据
@@ -242,9 +304,19 @@ class ExploreMain:
             for eachShip in user_ship['userShipVO']:
                 self.user.user_ship[int(eachShip['id'])] = eachShip
 
+            # 解析装备数据
+            for equipment in self.user.user_data['equipmentVo']:
+                self.user.user_equipment[int(equipment['equipmentCid'])] = equipment
+
             # 解析任务列表
             for eachTask in self.user.user_data['taskVo']:
                 self.user.task_info[eachTask['taskCid']] = eachTask
+
+            # 用户数据
+            self.user.ship_num_top = self.user.user_data['userVo']['shipNumTop']
+            self.user.equipment_top = self.user.user_data['userVo']['equipmentNumTop']
+
+            self.user.unlock_ship = [int(i) for i in self.user.user_data['unlockShip']]
 
         except NetWorkException as e:
             self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
@@ -257,8 +329,7 @@ class ExploreMain:
 
     def login(self) -> bool:
         self.user_profile.last_time = time.time()
-        self.user_profile.username = self.username
-        self.user_profile.save(update_fields=['last_time', 'username'])
+        self.user_profile.save(update_fields=['last_time'])
         try:
             self.sender.login()
         except LoginPasswordException:

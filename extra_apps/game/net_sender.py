@@ -119,6 +119,26 @@ class NetSender:
         url = f'{self._server}pvp/getWarResult/{night_fight}/{self._build_url_tail()}'
         return self._build_get(url)
 
+    def build_boat(self, dock, oil, ammo, steel, aluminium):
+        url = f'{self._server}dock/buildBoat/{dock}/{oil}/{steel}/{ammo}/{aluminium}{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def build_equipment(self, dock, oil, ammo, steel, aluminium):
+        url = f'{self._server}dock/buildEquipment/{dock}/{oil}/{steel}/{ammo}/{aluminium}{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def get_boat(self, dock):
+        url = f'{self._server}dock/getBoat/{dock}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def get_equipment(self, dock):
+        url = f'{self._server}dock/getEquipment/{dock}/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def lock_ship(self, ship_id):
+        url = f'{self._server}boat/lock/{ship_id}/{self._build_url_tail()}'
+        return self._build_get(url)
+
     def _build_get(self, url):
         try:
             data = self._requests.get(url=url, cookies=self._cookies, headers=NORMAL_HEADERS, timeout=20).content

@@ -179,7 +179,6 @@ class UserSettingSerializer(serializers.Serializer):
     def save(self, **kwargs):
         profile = UserProfile.objects.get(user=self.context['user'])
         attrs = self.validated_data
-        print(attrs)
         update_fields = []
         for key, dependencies in self.dependence.items():
             if key in attrs and attrs[key] is not None:
