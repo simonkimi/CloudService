@@ -48,7 +48,40 @@ class ExploreMain:
         if not self._parse_user_data():
             return
 
-        self._check_build_equipment(100, 110, 120, 130)
+        if self.user_profile.explore_switch:
+            self._check_explore()
+
+        if self.user_profile.repair_switch:
+            self._check_repair()
+
+        if self.user_profile.pvp_fleet != 0:
+            self._check_pvp(
+                fleet=self.user_profile.pvp_fleet,
+                formats=self.user_profile.pvp_format,
+                night_fight=self.user_profile.pvp_night
+            )
+
+        if self.user_profile.campaign_map != 0:
+            self._check_campaign(
+                maps=self.user_profile.campaign_map,
+                battle_format=self.user_profile.campaign_format
+            )
+
+        if self.user_profile.build_switch:
+            self._check_build_ship(
+                oil=self.user_profile.build_oil,
+                ammo=self.user_profile.build_ammo,
+                steel=self.user_profile.build_steel,
+                aluminium=self.user_profile.build_aluminium,
+            )
+
+        if self.user_profile.equipment_switch:
+            self._check_build_equipment(
+                oil=self.user_profile.equipment_oil,
+                ammo=self.user_profile.equipment_ammo,
+                steel=self.user_profile.equipment_steel,
+                aluminium=self.user_profile.equipment_aluminium,
+            )
 
     def _check_pvp(self, fleet, formats, night_fight):
         try:
