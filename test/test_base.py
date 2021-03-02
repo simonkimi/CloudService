@@ -1,5 +1,12 @@
-data = {
+class A:
+    def __init__(self):
+        self.data = 123
 
-}
 
-print(data.values())
+
+a = A()
+
+a.__setattr__('data', 321)
+
+print(a.data)
+

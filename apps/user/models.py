@@ -53,7 +53,15 @@ class UserProfile(models.Model):
     pvp_night = models.BooleanField(default=False, help_text='战役夜战')
     pvp_last = models.CharField(default="0_0", max_length=10, help_text='上次战役时间')
 
-    repair_switch = models.BooleanField(default=False)
+    repair_switch = models.BooleanField(default=False, help_text='修理开关')
+
+    build_switch = models.BooleanField(default=False, help_text='建造开关')
+    build_resource = models.CharField(default="30|30|30|30", max_length=128, help_text='建造资源')
+
+    equipment_switch = models.BooleanField(default=False, help_text='建造开关')
+    equipment_resource = models.CharField(default="30|30|30|30", max_length=128, help_text='建造资源')
+
+    dorm_event = models.BooleanField(default=False, help_text='摸头开关')
 
     class Meta:
         db_table = 'user_profile'
