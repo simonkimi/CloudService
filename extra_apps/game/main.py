@@ -1,6 +1,4 @@
 import time
-from os import name
-
 from explore.models import ExploreModel
 from campaign.models import CampaignModel
 from log import Log

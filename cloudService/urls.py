@@ -6,6 +6,9 @@ from explore.views import ExploreViewSet
 from campaign.views import CampaignViewSet
 from pvp.views import PvpViewSet
 from repair.views import RepairViewSet
+from build_ship.views import BuildShipViewSet
+from build_equipment.views import BuildEquipmentViewSet
+
 
 router = DefaultRouter()
 
@@ -15,6 +18,8 @@ router.register('explore', ExploreViewSet, basename='explore')
 router.register('campaign', CampaignViewSet, basename='campaign')
 router.register('pvp', PvpViewSet, basename='pvp')
 router.register('repair', RepairViewSet, basename='repair')
+router.register('build', BuildShipViewSet, basename='build')
+router.register('development', BuildEquipmentViewSet, basename='development')
 
 urlpatterns = [
     path("", include(router.urls)),
