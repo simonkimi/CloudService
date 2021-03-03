@@ -8,8 +8,10 @@ from user.models import UserProfile, User
 
 
 @app.task()
-def execute(user: User):
+def execute(username: str):
     try:
+        user = User.objects.get(username=username)
+        print(f'开始用户{user.username}')
         ExploreMain(user).main()
     except Exception as e:
         print(f"执行任务出错{str(e)}")
@@ -47,9 +49,7 @@ def find_need_operate_user():
     )
     for user in user_profile_explore:
         user_list.add(user.user)
-        user.last_time = now_time
-        user.next_time = user.last_time + 60 * 60 * 1
-        user.save(update_fields=['last_time', 'next_time'])
+        user.save(update_fields=['next_time'])
 
     # 战役
     user_profile_campaign = user_profile.filter(
@@ -61,8 +61,7 @@ def find_need_operate_user():
     for user in user_profile_campaign:
         user_list.add(user.user)
         user.campaign_last = now_day
-        user.last_time = now_time
-        user.save(update_fields=['campaign_last', 'last_time'])
+        user.save(update_fields=['campaign_last'])
 
     # 演习
     user_profile_pvp = user_profile.filter(
@@ -73,8 +72,12 @@ def find_need_operate_user():
     )
     for user in user_profile_pvp:
         user_list.add(user.user)
-        user.last_time = time.time()
         user.pvp_last = pvp_day
-        user.save(update_fields=['last_time', 'pvp_last'])
+        user.save(update_fields=['pvp_last'])
 
-    [execute.delay(user) for user in user_list]
+    for user in user_list:
+        profile = UserProfile.objects.get(user=user)
+        profile.last_time = now_time
+        profile.next_time = now_time + 60 * 60
+        profile.save(update_fields=['next_time', 'last_time'])
+        execute.delay(user.username)
