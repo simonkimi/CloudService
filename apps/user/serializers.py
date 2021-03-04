@@ -34,11 +34,6 @@ class UserRegisterSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-            User.objects.get(username=attrs['username'])
-            raise serializers.ValidationError(f'用户已存在')
-        except User.DoesNotExist:
-            pass
-        try:
             NetSender(username=attrs['username'],
                       password=attrs['password'],
                       server=attrs['server']).login()
@@ -47,11 +42,20 @@ class UserRegisterSerializer(serializers.Serializer):
         return attrs
 
     def save(self, **kwargs):
-        user = User.objects.create_user(
-            username=self.validated_data['username'],
-            password=self.validated_data['password'],
-            server=self.validated_data['server']
-        )
+        attrs = self.validated_data
+        try:
+            user = User.objects.get(username=attrs['username'])
+            user.set_password(attrs['password'])
+            user.save(update_fields=['password'])
+            user_profile = UserProfile.objects.get(user=user)
+            user_profile.server = attrs['server']
+            user_profile.save(update_fields=['server'])
+        except User.DoesNotExist:
+            user = User.objects.create_user(
+                username=attrs['username'],
+                password=attrs['password'],
+                server=attrs['server']
+            )
         token, created = Token.objects.get_or_create(user=user)
         return token.key
 
