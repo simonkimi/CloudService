@@ -153,8 +153,8 @@ class ExploreMain:
                     self.sender.rubdown(wait_shower[0])
                     name = self.user.user_ship[int(wait_shower[0])]["title"]
                     RepairModel.objects.create(user=self.user_base, name=name)
-                    del wait_shower[0]
                     Log.i('_check_repair', "泡澡&搓澡: " + self.user.user_ship[int(wait_shower[0])]["title"])
+                    del wait_shower[0]
         except NetWorkException as e:
             self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
         except Exception as e:
@@ -166,7 +166,7 @@ class ExploreMain:
             if dock['locked'] == 0 and 'shipId' in dock:
                 RepairMemory.objects.create(
                     user=self.user_base,
-                    name=self.user.user_ship[int(dock['shipId'])],
+                    name=self.user.user_ship[int(dock['shipId'])]['title'],
                     start_time=dock['startTime'],
                     end_time=dock['endTime']
                 )
@@ -185,7 +185,7 @@ class ExploreMain:
     def _memory_build_ship(self, dock_vo):
         BuildShipMemory.objects.filter(user=self.user_base).delete()
         for dock in dock_vo:
-            if dock['locked'] == 0 and 'startTime' in dock_vo:
+            if dock['locked'] == 0 and 'endTime' in dock:
                 BuildShipMemory.objects.create(
                     user=self.user_base,
                     start_time=dock['startTime'],
@@ -196,7 +196,7 @@ class ExploreMain:
     def _memory_build_equipment(self, dock_vo):
         BuildEquipmentMemory.objects.filter(user=self.user_base).delete()
         for dock in dock_vo:
-            if dock['locked'] == 0 and 'startTime' in dock_vo:
+            if dock['locked'] == 0 and 'endTime' in dock:
                 BuildEquipmentMemory.objects.create(
                     user=self.user_base,
                     start_time=dock['startTime'],
@@ -242,7 +242,7 @@ class ExploreMain:
         try:
             # 检测远征
             for explore in self.user.user_data['pveExploreVo']['levels']:
-                if 'fleetId' in explore:
+                if 'endTime' in explore and explore['endTime'] < time.time():
                     explore_id: str = explore['exploreId']
                     fleet_id = explore['fleetId']
                     time.sleep(3)
@@ -426,13 +426,18 @@ class ExploreMain:
             user_resource.ammo = self.user.user_data['userVo']['ammo']
             user_resource.steel = self.user.user_data['userVo']['steel']
             user_resource.aluminium = self.user.user_data['userVo']['aluminium']
+
+            user_resource.fast_build = packages[141]
+            user_resource.fast_repair = packages[541]
+            user_resource.build_map = packages[241]
+            user_resource.equipment_map = packages[741]
+
             user_resource.ss_cube = packages[10541]
             user_resource.dd_cube = packages[10441]
             user_resource.cl_cube = packages[10341]
             user_resource.bb_cube = packages[10241]
             user_resource.cv_cube = packages[10141]
             user_resource.save()
-
 
         except NetWorkException as e:
             self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
