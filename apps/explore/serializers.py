@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db.models import Sum
-from .models import ExploreModel
+from .models import ExploreModel, ExploreMemory
 from time import time
 
 
@@ -32,7 +32,6 @@ class StatisticSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         user = self.context['user']
-        print(self.validated_data)
         min_time = min(self.validated_data['end_time'], self.validated_data['start_time'])
         max_time = max(self.validated_data['end_time'], self.validated_data['start_time'])
 
@@ -67,3 +66,13 @@ class StatisticSerializer(serializers.Serializer):
             'start_time',
             'end_time'
         )
+
+
+class ExploreMemorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExploreMemory
+        fields = [
+            'map',
+            'start_time',
+            'end_time'
+        ]

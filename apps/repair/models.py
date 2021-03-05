@@ -10,3 +10,13 @@ class RepairModel(models.Model):
 
     class Meta:
         db_table = 'repair'
+
+
+class RepairMemory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=128, help_text='泡澡名称')
+    start_time = models.IntegerField(help_text='开始时间')
+    end_time = models.IntegerField(help_text='结束时间')
+
+    class Meta:
+        db_table = 'repair_memory'

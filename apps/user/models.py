@@ -3,6 +3,27 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 
+class EarningBaseModel(models.Model):
+    oil = models.IntegerField(default=0, help_text='油收益')
+    ammo = models.IntegerField(default=0, help_text='弹药')
+    steel = models.IntegerField(default=0, help_text='钢铁')
+    aluminium = models.IntegerField(default=0, help_text='铝')
+
+    dd_cube = models.IntegerField(default=0, help_text='驱逐核心')
+    cl_cube = models.IntegerField(default=0, help_text='巡洋核心')
+    bb_cube = models.IntegerField(default=0, help_text='战列核心')
+    cv_cube = models.IntegerField(default=0, help_text='航母核心')
+    ss_cube = models.IntegerField(default=0, help_text='潜艇')
+
+    fast_repair = models.IntegerField(default=0, help_text='快修')
+    fast_build = models.IntegerField(default=0, help_text='快建')
+    build_map = models.IntegerField(default=0, help_text='建造蓝图')
+    equipment_map = models.IntegerField(default=0, help_text='开发蓝图')
+
+    class Meta:
+        abstract = True
+
+
 class UserManager(BaseUserManager):
     def create_user(self, username, password, server, is_superuser=False):
         user = User.objects.create(username=username)
@@ -10,6 +31,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save()
         UserProfile.objects.create(user=user, server=server)
+        UserResource.objects.create(user=user)
         return user
 
     def create_superuser(self, username, password):
@@ -55,18 +77,25 @@ class UserProfile(models.Model):
     repair_switch = models.BooleanField(default=False, help_text='修理开关')
 
     build_switch = models.BooleanField(default=False, help_text='建造开关')
-    build_oil = models.IntegerField(default=30, help_text='油')
-    build_ammo = models.IntegerField(default=30, help_text='弹')
-    build_steel = models.IntegerField(default=30, help_text='钢')
-    build_aluminium = models.IntegerField(default=30, help_text='铝')
+    build_oil = models.IntegerField(default=100, help_text='油')
+    build_ammo = models.IntegerField(default=100, help_text='弹')
+    build_steel = models.IntegerField(default=100, help_text='钢')
+    build_aluminium = models.IntegerField(default=100, help_text='铝')
 
     equipment_switch = models.BooleanField(default=False, help_text='建造开关')
-    equipment_oil = models.IntegerField(default=30, help_text='油')
-    equipment_ammo = models.IntegerField(default=30, help_text='弹')
-    equipment_steel = models.IntegerField(default=30, help_text='钢')
-    equipment_aluminium = models.IntegerField(default=30, help_text='铝')
+    equipment_oil = models.IntegerField(default=100, help_text='油')
+    equipment_ammo = models.IntegerField(default=100, help_text='弹')
+    equipment_steel = models.IntegerField(default=100, help_text='钢')
+    equipment_aluminium = models.IntegerField(default=100, help_text='铝')
 
     dorm_event = models.BooleanField(default=False, help_text='摸头开关')
 
     class Meta:
         db_table = 'user_profile'
+
+
+class UserResource(EarningBaseModel):
+    user = models.OneToOneField(User, models.CASCADE, related_name='user_resource')
+
+    class Meta:
+        db_table = 'user_resource'

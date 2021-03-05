@@ -67,6 +67,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = (
+            'username',
             'server',
             'switch',
             'point',

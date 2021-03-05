@@ -1,7 +1,7 @@
 from django.db import models
 from time import time
-from explore.models import EarningBaseModel
-from user.models import User
+
+from user.models import User, EarningBaseModel
 
 
 class CampaignModel(EarningBaseModel):

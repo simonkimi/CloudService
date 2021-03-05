@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import BuildEquipmentModel
+from .models import BuildEquipmentModel, BuildEquipmentMemory
 
 
 class BuildEquipmentListSerializer(serializers.ModelSerializer):
@@ -9,3 +9,13 @@ class BuildEquipmentListSerializer(serializers.ModelSerializer):
             'cid',
             'create_time'
         )
+
+
+class BuildShipMemorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BuildEquipmentMemory
+        fields = [
+            'cid',
+            'start_time',
+            'end_time'
+        ]

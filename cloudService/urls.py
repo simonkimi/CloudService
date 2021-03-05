@@ -22,6 +22,6 @@ router.register('build', BuildShipViewSet, basename='build')
 router.register('development', BuildEquipmentViewSet, basename='development')
 
 urlpatterns = [
-    path("", include(router.urls)),
+    path("api/", include(router.urls)),
     path('admin/', admin.site.urls),
 ]
