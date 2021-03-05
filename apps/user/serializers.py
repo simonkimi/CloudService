@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from game.net_sender import NetSender
-from .models import User, UserProfile
+from .models import User, UserProfile, UserResource
 
 
 class UserLoginSerializer(serializers.Serializer):
@@ -194,3 +194,23 @@ class UserSettingSerializer(serializers.Serializer):
                     profile.__setattr__(sub_key, attrs[sub_key])
         profile.save(update_fields=update_fields)
         return profile
+
+
+class UserResourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserResource
+        fields = [
+            'oil',
+            'ammo',
+            'steel',
+            'aluminium',
+            'dd_cube',
+            'cl_cube',
+            'bb_cube',
+            'cv_cube',
+            'ss_cube',
+            'fast_repair',
+            'fast_build',
+            'build_map',
+            'equipment_map',
+        ]

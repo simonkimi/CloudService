@@ -11,7 +11,7 @@ class BuildEquipmentListSerializer(serializers.ModelSerializer):
         )
 
 
-class BuildShipMemorySerializer(serializers.ModelSerializer):
+class BuildEquipmentMemorySerializer(serializers.ModelSerializer):
     class Meta:
         model = BuildEquipmentMemory
         fields = [

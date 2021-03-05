@@ -464,7 +464,6 @@ class ExploreMain:
         except Exception as e:
             self._create_operate(user=self.user_base, desc=f'登录失败: {str(e)}, 等待一个小时后再登录', desc_type=2)
             return False
-        self._create_operate(user=self.user_base, desc=f'登录游戏, 准备开始任务', desc_type=0)
         return True
 
     def _create_operate(self, user, desc, desc_type):
