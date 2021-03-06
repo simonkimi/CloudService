@@ -10,7 +10,7 @@ from .serializers import OperateListSerializers
 
 class OperateViewSets(ListModelMixin, GenericViewSet):
     serializer_class = OperateListSerializers
-    authentication_classes = TokenAuthentication
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     pagination_class = StanderPageNumberPagination
 

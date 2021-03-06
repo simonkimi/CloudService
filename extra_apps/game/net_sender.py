@@ -28,6 +28,7 @@ class NetWorkException(Exception):
 
 class NetSender:
     def __init__(self, username, password, server):
+        self._is_login = False
         self._cookies = None
         self._version = None
         self._channel = None
@@ -152,6 +153,8 @@ class NetSender:
             raise Exception(f'{str(url)}, {str(e)}')
 
     def login(self):
+        if self._is_login:
+            return
         url_version = URL_VERSION if self._server_index <= 3 else URL_IOS_VERSION
         self._channel = '100011' if self._server_index <= 3 else '100015'
         # 获取版本信息
@@ -231,6 +234,7 @@ class NetSender:
         random.seed()
         url_login_1 = f'{login_server}index/login/{uid}?&{urlencode(data_dict)}'
         self._requests.get(url=url_login_1)
+        self._is_login = True
 
     def _build_url_tail(self, timestamp=str(int(round(time.time() * 1000)))):
         md5_raw = timestamp + 'ade2688f1904e9fb8d2efdb61b5e398a'

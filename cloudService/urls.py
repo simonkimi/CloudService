@@ -8,6 +8,7 @@ from pvp.views import PvpViewSet
 from repair.views import RepairViewSet
 from build_ship.views import BuildShipViewSet
 from build_equipment.views import BuildEquipmentViewSet
+from operate.views import OperateViewSets
 
 
 router = DefaultRouter()
@@ -20,6 +21,7 @@ router.register('pvp', PvpViewSet, basename='pvp')
 router.register('repair', RepairViewSet, basename='repair')
 router.register('build', BuildShipViewSet, basename='build')
 router.register('development', BuildEquipmentViewSet, basename='development')
+router.register('operate', OperateViewSets, basename='operate')
 
 urlpatterns = [
     path("api/", include(router.urls)),

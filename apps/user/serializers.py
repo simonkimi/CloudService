@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
+
+from game.main import ExploreMain
 from game.net_sender import NetSender
 from .models import User, UserProfile, UserResource
 
@@ -34,11 +36,12 @@ class UserRegisterSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-            NetSender(username=attrs['username'],
-                      password=attrs['password'],
-                      server=attrs['server']).login()
+            sender = NetSender(username=attrs['username'],
+                               password=attrs['password'],
+                               server=attrs['server']).login()
+            attrs['sender'] = sender
         except Exception as e:
-            raise serializers.ValidationError(f'验证失败: {str(e)}')
+            raise serializers.ValidationError(f'用户名或者密码错误: {str(e)}')
         return attrs
 
     def save(self, **kwargs):
@@ -56,6 +59,7 @@ class UserRegisterSerializer(serializers.Serializer):
                 password=attrs['password'],
                 server=attrs['server']
             )
+        ExploreMain(user=user, sender=attrs['sender']).init_user()
         token, created = Token.objects.get_or_create(user=user)
         return token.key
 

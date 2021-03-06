@@ -59,7 +59,6 @@ class UserLoginViewSets(GenericViewSet):
             return UserSerializer
         elif self.action in ['setting']:
             return UserSettingSerializer
-        return UserSettingSerializer
 
 
 class UserViewSets(GenericViewSet):

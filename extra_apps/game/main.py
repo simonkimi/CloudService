@@ -31,16 +31,22 @@ class ExploreUser:
 
 
 class ExploreMain:
-    def __init__(self, user: User):
+    def __init__(self, user: User, sender: NetSender = None):
         self.user = ExploreUser()
         self.user_base = user
         self.user_profile = UserProfile.objects.get(user=user)
         self.username = None
-        self.sender = NetSender(
+        self.sender = sender or NetSender(
             username=self.user_base.username,
             password=user.password.split('$', 1)[-1],
             server=self.user_profile.server
         )
+
+    def init_user(self):
+        if not self.login():
+            return
+        if not self._parse_user_data():
+            return
 
     def main(self):
         # 登录游戏
@@ -48,6 +54,8 @@ class ExploreMain:
             return
         if not self._parse_user_data():
             return
+
+        self._check_repair_finish()
 
         if self.user_profile.explore_switch:
             self._check_explore()
@@ -121,7 +129,7 @@ class ExploreMain:
         except Exception as e:
             self._create_operate(user=self.user_base, desc=f'演习出现错误: {str(e)}', desc_type=2)
 
-    def _check_repair(self):
+    def _check_repair_finish(self):
         try:
             # 出浴船只
             for repair_dock in self.user.user_data['repairDockVo']:
@@ -129,9 +137,18 @@ class ExploreMain:
                     time.sleep(2)
                     data = self.sender.repair_complete(repair_dock["id"], repair_dock["shipId"])
                     if "repairDockVo" in data:
+                        self._memory_repair(data["repairDockVo"])
                         self.user.user_data["repairDockVo"] = data["repairDockVo"]
                     if "shipVO" in data:
                         self.user.user_ship[int(repair_dock["shipId"])] = data["shipVO"]
+
+        except NetWorkException as e:
+            self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
+        except Exception as e:
+            self._create_operate(user=self.user_base, desc=f'出浴出现错误: {str(e)}', desc_type=2)
+
+    def _check_repair(self):
+        try:
             # 获取需要泡澡船只
             repairing_data = [int(dock['shipId']) for dock in self.user.user_data["repairDockVo"] if
                               "shipId" in dock and dock["endTime"] > time.time()]

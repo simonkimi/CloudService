@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import ListModelMixin
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from utils.pagination import StanderPageNumberPagination
 from .models import ExploreModel
 from .serializers import ExploreListSerializer, StatisticSerializer
@@ -12,6 +13,7 @@ from .serializers import ExploreListSerializer, StatisticSerializer
 class ExploreViewSet(ListModelMixin, GenericViewSet):
     pagination_class = StanderPageNumberPagination
     authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return ExploreModel.objects.filter(user=self.request.user)
