@@ -7,7 +7,7 @@ PAST_PORT_HEADERS = {
 NORMAL_HEADERS = {
     'Accept-Encoding': 'identity',
     'Connection': 'Keep-Alive',
-    'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 5.0.2; Lenovo A7600-m Build/LRX21M)'
+    'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 8.1.0; Meizu 16th Build/LRX21M)'
 }
 
 PASS_KEY = "kHPmWZ4zQBYP24ubmJ5wA4oz0d8EgIFe"
@@ -40,3 +40,5 @@ CAMPAIGN_MAP = {
 SHIP_TYPE = {1: "航母", 2: "轻母", 3: "装母", 4: "战列", 5: "航战", 6: "战巡", 7: "重巡", 8: "航巡",
              9: "雷巡", 10: "轻巡", 11: "重炮", 12: "驱逐", 13: "潜母", 14: "潜艇", 15: "炮潜", 16: "补给",
              23: "导驱", 24: "防驱", 26: "导战"}
+
+

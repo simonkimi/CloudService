@@ -34,7 +34,7 @@ class ExploreMain:
     def __init__(self, user: User, sender: NetSender = None):
         self.user = ExploreUser()
         self.user_base = user
-        self.user_profile = UserProfile.objects.get(user=user)
+        self.user_profile: UserProfile = UserProfile.objects.get(user=user)
         self.username = None
         self.sender = sender or NetSender(
             username=self.user_base.username,
@@ -428,6 +428,10 @@ class ExploreMain:
             self.user.equipment_top = self.user.user_data['userVo']['equipmentNumTop']
 
             self.user.unlock_ship = [int(i) for i in self.user.user_data['unlockShip']]
+
+            self.user_profile.sign = self.user.user_data['friendVo']['sign']
+            self.user_profile.level = int(self.user.user_data['friendVo']['level'])
+            self.user_profile.save(update_fields=['sign', 'level'])
 
             # 解析基础数据
             self._memory_explore(self.user.user_data['pveExploreVo']['levels'])

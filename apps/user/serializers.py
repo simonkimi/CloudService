@@ -73,6 +73,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = (
             'username',
             'server',
+            'level',
+            'sign',
             'switch',
             'point',
             'last_time',

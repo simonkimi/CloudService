@@ -50,6 +50,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, models.CASCADE, related_name='user_profile')
     username = models.CharField(max_length=128, default='', help_text='用户名')
+    sign = models.TextField(default='', help_text='个性签名')
+    level = models.IntegerField(default=1, help_text='等级')
 
     server = models.IntegerField(help_text='服务器')
 
