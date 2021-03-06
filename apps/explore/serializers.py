@@ -37,7 +37,6 @@ class StatisticSerializer(serializers.Serializer):
 
         sums = queryset.aggregate(
             Sum('oil'), Sum('ammo'), Sum('steel'), Sum('aluminium'),
-            Sum('dd_cube'), Sum('cl_cube'), Sum('bb_cube'), Sum('cv_cube'), Sum('ss_cube'),
             Sum('fast_repair'), Sum('fast_build'), Sum('build_map'), Sum('equipment_map'),
         )
         return {
@@ -45,11 +44,6 @@ class StatisticSerializer(serializers.Serializer):
             'ammo': sums['ammo__sum'] or 0,
             'steel': sums['steel__sum'] or 0,
             'aluminium': sums['aluminium__sum'] or 0,
-            'dd_cube': sums['dd_cube__sum'] or 0,
-            'cl_cube': sums['cl_cube__sum'] or 0,
-            'bb_cube': sums['bb_cube__sum'] or 0,
-            'cv_cube': sums['cv_cube__sum'] or 0,
-            'ss_cube': sums['ss_cube__sum'] or 0,
             'fast_repair': sums['fast_repair__sum'] or 0,
             'fast_build': sums['fast_build__sum'] or 0,
             'build_map': sums['build_map__sum'] or 0,
