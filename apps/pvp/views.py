@@ -14,4 +14,4 @@ class PvpViewSet(ListModelMixin, GenericViewSet):
     serializer_class = PvpListSerializer
 
     def get_queryset(self):
-        return PvpModel.objects.filter(user=self.request.user)
+        return PvpModel.objects.filter(user=self.request.user).order_by('-create_time')

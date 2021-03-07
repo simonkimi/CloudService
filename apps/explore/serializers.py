@@ -10,6 +10,7 @@ class ExploreListSerializer(serializers.ModelSerializer):
         fields = (
             'map',
             'create_time',
+            'success',
             'oil',
             'ammo',
             'steel',

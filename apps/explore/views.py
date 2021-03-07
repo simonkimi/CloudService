@@ -16,11 +16,11 @@ class ExploreViewSet(ListModelMixin, GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return ExploreModel.objects.filter(user=self.request.user)
+        return ExploreModel.objects.filter(user=self.request.user).order_by('-create_time')
 
     @action(methods=['GET'], detail=False)
     def statistic(self, request):
-        serializer = self.get_serializer(data=request.data, context={'user': request.user})
+        serializer = self.get_serializer(data=request.GET, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         return Response(
             serializer.save(),

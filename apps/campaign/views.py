@@ -17,7 +17,7 @@ class CampaignViewSet(ListModelMixin, GenericViewSet):
     pagination_class = StanderPageNumberPagination
 
     def get_queryset(self):
-        return CampaignModel.objects.filter(user=self.request.user)
+        return CampaignModel.objects.filter(user=self.request.user).order_by('-create_time')
 
     @action(methods=['GET'], detail=False)
     def statistic(self, request):

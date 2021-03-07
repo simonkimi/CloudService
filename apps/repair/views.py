@@ -14,4 +14,4 @@ class RepairViewSet(ListModelMixin, GenericViewSet):
     serializer_class = RepairSerializer
 
     def get_queryset(self):
-        return RepairModel.objects.filter(user=self.request.user)
+        return RepairModel.objects.filter(user=self.request.user).order_by('-create_time')

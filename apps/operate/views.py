@@ -15,4 +15,4 @@ class OperateViewSets(ListModelMixin, GenericViewSet):
     pagination_class = StanderPageNumberPagination
 
     def get_queryset(self):
-        return OperateModel.objects.filter(user=self.request.user)
+        return OperateModel.objects.filter(user=self.request.user).order_by('-create_time')

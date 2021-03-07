@@ -14,5 +14,5 @@ class BuildShipViewSet(ListModelMixin, GenericViewSet):
     serializer_class = BuildShipListSerializer
 
     def get_queryset(self):
-        return BuildShipModel.objects.filter(user=self.request.user)
+        return BuildShipModel.objects.filter(user=self.request.user).order_by('-create_time')
 

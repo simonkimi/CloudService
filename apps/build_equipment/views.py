@@ -14,4 +14,4 @@ class BuildEquipmentViewSet(ListModelMixin, GenericViewSet):
     serializer_class = BuildEquipmentListSerializer
 
     def get_queryset(self):
-        return BuildEquipmentModel.objects.filter(user=self.request.user)
+        return BuildEquipmentModel.objects.filter(user=self.request.user).order_by('-create_time')
