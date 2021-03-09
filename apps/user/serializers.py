@@ -165,7 +165,7 @@ class UserSettingSerializer(serializers.Serializer):
 
     @staticmethod
     def validate_campaign_format(data):
-        if data and not 0 <= data <= 4:
+        if data and not 1 <= data <= 5:
             raise serializers.ValidationError('阵型不存在')
         return data
 

@@ -8,7 +8,8 @@ class BuildShipListSerializer(serializers.ModelSerializer):
         fields = (
             'cid',
             'name',
-            'create_time'
+            'create_time',
+            'is_new'
         )
 
 

@@ -8,7 +8,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignModel
         fields = ('map', 'oil', 'ammo', 'steel', 'aluminium',
-                  'dd_cube', 'cl_cube', 'bb_cube', 'cv_cube', 'ss_cube')
+                  'dd_cube', 'cl_cube', 'bb_cube', 'cv_cube', 'ss_cube', 'create_time')
 
 
 class StatisticSerializer(serializers.Serializer):

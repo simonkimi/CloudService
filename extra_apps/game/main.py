@@ -116,7 +116,7 @@ class ExploreMain:
                 else:
                     result_data = self.sender.pvp_get_result(night_fight=0)
                 result_level = result_data['warResult']['resultLevel']
-                Log.i('_check_pvp', "演习:", pvp_username, result_level)
+                Log.i('_check_pvp', self.username, "演习:", pvp_username, result_level)
                 PvpModel.objects.create(
                     user=self.user_base,
                     username=pvp_username,
@@ -339,6 +339,7 @@ class ExploreMain:
         try:
             for dock in self.user.user_data['dockVo']:
                 if len(self.user.user_ship) >= self.user.ship_num_top:
+                    print("船只溢出")
                     return True
                 if dock['locked'] == 0:
                     if 'endTime' in dock:

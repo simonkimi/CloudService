@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'repair',
     'operate',
     'build_ship',
-    'build_equipment'
+    'build_equipment',
+    'password'
 ]
 
 MIDDLEWARE = [

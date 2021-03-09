@@ -3,8 +3,7 @@ import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                       'cloudService.settings')
 import django
-import hashlib
-import json
+
 
 django.setup()
 
