@@ -10,6 +10,10 @@ class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(help_text='用户名')
     password = serializers.CharField(help_text='密码')
 
+    @staticmethod
+    def validate_username(data: str):
+        return data.lower()
+
     def validate(self, attrs):
         try:
             user = User.objects.get(username=attrs['username'])
@@ -33,6 +37,10 @@ class UserRegisterSerializer(serializers.Serializer):
     username = serializers.CharField(help_text='用户名')
     password = serializers.CharField(help_text='密码')
     server = serializers.IntegerField(help_text='服务器')
+
+    @staticmethod
+    def validate_username(data: str):
+        return data.lower()
 
     def validate(self, attrs):
         try:
