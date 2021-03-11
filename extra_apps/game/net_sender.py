@@ -39,6 +39,8 @@ class NetSender:
         self._server = SERVER_LIST[server]
         self._requests = requests.session()
 
+        # self._requests.verify = False
+
     def get_user_data(self):
         url = f'{self._server}api/initGame?&crazy=0{self._build_url_tail()}'
         return self._build_get(url)
@@ -233,6 +235,7 @@ class NetSender:
                 raise Exception('NetSender.login.url_login ' + str(e))
 
         # 正式登录游戏
+        print('登陆游戏')
         now_time = str(int(round(time.time() * 1000)))
         random.seed(hashlib.md5(self._username.encode('utf-8')).hexdigest())
         data_dict = {
@@ -252,7 +255,7 @@ class NetSender:
             'version': self._version
         }
         random.seed()
-        url_login_1 = f'{login_server}index/login/{uid}?&{urlencode(data_dict)}'
+        url_login_1 = f'{self._server}index/login/{uid}?&{urlencode(data_dict)}'
         self._requests.get(url=url_login_1)
         self._is_login = True
 

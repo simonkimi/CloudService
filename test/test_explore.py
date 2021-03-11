@@ -10,7 +10,7 @@ django.setup()
 from user.models import User
 from game.main import ExploreMain
 
-user = User.objects.all()[0]
+user = User.objects.get(username="simon_xu")
 
 explore = ExploreMain(user)
 explore.main()

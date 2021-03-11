@@ -492,8 +492,7 @@ class ExploreMain:
         self.user_profile.last_time = time.time()
         self.user_profile.save(update_fields=['last_time'])
         try:
-            token = self.user_profile.token
-            self.sender.login(token)
+            self.sender.login(self.user_profile)
         except LoginPasswordException:
             self._create_operate(user=self.user_base, desc=f'用户名或密码错误, 无法登录服务器, 自动关闭开关', desc_type=2)
             self.user_profile.switch = False
