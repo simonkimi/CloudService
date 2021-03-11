@@ -36,6 +36,7 @@ class UserLoginSerializer(serializers.Serializer):
 class UserRegisterSerializer(serializers.Serializer):
     username = serializers.CharField(help_text='用户名')
     password = serializers.CharField(help_text='密码')
+    qq = serializers.CharField(help_text='QQ', allow_null=True, allow_blank=True, default='')
     server = serializers.IntegerField(help_text='服务器')
 
     @staticmethod
@@ -59,13 +60,15 @@ class UserRegisterSerializer(serializers.Serializer):
             user.set_password(attrs['password'])
             user.save(update_fields=['password'])
             user_profile = UserProfile.objects.get(user=user)
+            user_profile.qq = attrs['qq']
             user_profile.server = attrs['server']
-            user_profile.save(update_fields=['server'])
+            user_profile.save(update_fields=['server', 'qq'])
         except User.DoesNotExist:
             user = User.objects.create_user(
                 username=attrs['username'],
                 password=attrs['password'],
-                server=attrs['server']
+                server=attrs['server'],
+                qq=attrs['qq']
             )
         ExploreMain(user=user, sender=attrs['sender']).init_user()
         token, created = Token.objects.get_or_create(user=user)

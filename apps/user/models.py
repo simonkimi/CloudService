@@ -25,12 +25,12 @@ class EarningBaseModel(models.Model):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, password, server, is_superuser=False):
+    def create_user(self, username, password, server, qq, is_superuser=False):
         user = User.objects.create(username=username)
         user.is_superuser = is_superuser
         user.set_password(password)
         user.save()
-        UserProfile.objects.create(user=user, server=server)
+        UserProfile.objects.create(user=user, server=server, qq=qq)
         UserResource.objects.create(user=user)
         return user
 
@@ -50,6 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, models.CASCADE, related_name='user_profile')
     username = models.CharField(max_length=128, default='', help_text='用户名')
+    qq = models.CharField(max_length=15, default='', help_text='QQ')
     sign = models.TextField(default='', help_text='个性签名')
     level = models.IntegerField(default=1, help_text='等级')
 
