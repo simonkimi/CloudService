@@ -6,11 +6,13 @@ class Logger:
         self.logger = logging.getLogger('Main')
         self.logger.setLevel(logging.INFO)
         fmt = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s', '%Y-%m-%d %H:%M:%S')
-        # 设置CMD日志
-        sh = logging.StreamHandler()
-        sh.setFormatter(fmt)
-        sh.setLevel(clevel)
-        self.logger.addHandler(sh)
+
+        if len(self.logger.handlers) == 0:
+            # 设置CMD日志
+            sh = logging.StreamHandler()
+            sh.setFormatter(fmt)
+            sh.setLevel(clevel)
+            self.logger.addHandler(sh)
 
     def d(self, tag: str, *kwargs):
         self.logger.debug(tag + ' ' + ' '.join([str(x) for x in kwargs]))

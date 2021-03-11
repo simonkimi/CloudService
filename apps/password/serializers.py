@@ -20,7 +20,6 @@ class ActiveSerializers(serializers.Serializer):
 
     def save(self, **kwargs):
         user = self.context['user']
-        print(self.validated_data)
         password: PasswordModel = PasswordModel.objects.get(code=self.validated_data['code'])
         password.user = user
         password.activity_time = int(time())

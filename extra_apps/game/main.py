@@ -339,7 +339,6 @@ class ExploreMain:
         try:
             for dock in self.user.user_data['dockVo']:
                 if len(self.user.user_ship) >= self.user.ship_num_top:
-                    print("船只溢出")
                     return True
                 if dock['locked'] == 0:
                     if 'endTime' in dock:
@@ -489,5 +488,5 @@ class ExploreMain:
         return True
 
     def _create_operate(self, user, desc, desc_type):
-        print('Operate', self.username or '未登录', self.user_profile.username, desc)
+        Log.i('Operate', self.username or '未登录', self.user_profile.username, desc)
         OperateModel.objects.create(user=user, desc=desc, desc_type=desc_type)
