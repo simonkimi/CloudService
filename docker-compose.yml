@@ -37,6 +37,6 @@ services:
       - redis
     volumes_from:
       - web
-    command: 'celery -A asynchronous worker --loglevel=info'
+    command: 'celery -A asynchronous worker -c 15 --loglevel=info'
 
 

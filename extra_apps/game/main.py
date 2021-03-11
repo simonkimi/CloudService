@@ -95,7 +95,7 @@ class ExploreMain:
 
     def _check_pvp(self, fleet, formats, night_fight):
         try:
-            time.sleep(2)
+            time.sleep(1)
             pvp_list = self.sender.pvp_get_list()
             # 检测修理
             fleet_ship = self.user.fleet[int(fleet)]
@@ -106,11 +106,11 @@ class ExploreMain:
                 pvp_uid = pvp_person['uid']
                 pvp_username = pvp_person['username']
                 pvp_ship_name = [i["title"] for i in pvp_person['ships']]
-                time.sleep(2)
+                time.sleep(1)
                 self.sender.pvp_spy(uid=pvp_uid, fleet=fleet)
-                time.sleep(2)
+                time.sleep(1)
                 fight_data = self.sender.pvp_fight(uid=pvp_uid, fleet=fleet, formats=formats)
-                time.sleep(10)
+                time.sleep(5)
                 if fight_data['warReport']['canDoNightWar'] == 1 and night_fight == 1:
                     result_data = self.sender.pvp_get_result(night_fight=1)
                     time.sleep(5)
@@ -135,7 +135,7 @@ class ExploreMain:
             # 出浴船只
             for repair_dock in self.user.user_data['repairDockVo']:
                 if 'endTime' in repair_dock and repair_dock["endTime"] < time.time():
-                    time.sleep(2)
+                    time.sleep(1)
                     data = self.sender.repair_complete(repair_dock["id"], repair_dock["shipId"])
                     if "repairDockVo" in data:
                         self._memory_repair(data["repairDockVo"])
@@ -164,10 +164,10 @@ class ExploreMain:
 
             for dock in self.user.user_data["repairDockVo"]:
                 if dock["locked"] == 0 and "endTime" not in dock and len(wait_shower) > 0:
-                    time.sleep(3)
+                    time.sleep(1)
                     shower_data = self.sender.shower(wait_shower[0])
                     self._memory_repair(shower_data['repairDockVo'])
-                    time.sleep(3)
+                    time.sleep(1)
                     self.sender.rubdown(wait_shower[0])
                     name = self.user.user_ship[int(wait_shower[0])]["title"]
                     RepairModel.objects.create(user=self.user_base, name=name)
@@ -225,7 +225,7 @@ class ExploreMain:
     def _check_campaign(self, maps, battle_format):
         try:
             while True:
-                time.sleep(3)
+                time.sleep(1)
                 campaign_count = self.sender.get_campaign_data()
                 if campaign_count['passInfo']['remainNum'] == 0:
                     break
@@ -238,11 +238,11 @@ class ExploreMain:
                     self.user_profile.save(update_fields=['campaign_map'])
                     break
                 self._fast_repair(valid_fleet)
-                time.sleep(3)
+                time.sleep(1)
                 self.sender.supply(valid_fleet)
-                time.sleep(3)
+                time.sleep(1)
                 self.sender.campaign_get_spy(maps=maps)
-                time.sleep(2)
+                time.sleep(1)
                 campaign_data = self.sender.campaign_fight(maps, battle_format)
                 time.sleep(10)
                 campaign_result = self.sender.campaign_get_result(campaign_data['warReport']['canDoNightWar'])
@@ -263,14 +263,14 @@ class ExploreMain:
                 if 'endTime' in explore and explore['endTime'] < time.time():
                     explore_id: str = explore['exploreId']
                     fleet_id = explore['fleetId']
-                    time.sleep(3)
+                    time.sleep(1)
                     explore_result = self.sender.get_explore(explore_id)
                     map_name = explore_id.replace('000', '-')
                     success = explore_result['bigSuccess']
                     Log.i("_check_explore", self.username, "远征", map_name, f'{"大" if success else ""}成功')
                     if 'newAward' in explore_result and len(explore_result['newAward']) != 0:
                         self._build_explore_award(map_name, success, explore_result['newAward'])
-                    time.sleep(3)
+                    time.sleep(1)
                     rsp = self.sender.start_explore(maps=explore_id, fleet=fleet_id)
                     last_explore_data = rsp['pveExploreVo']['levels']
             if last_explore_data is None:
@@ -329,7 +329,7 @@ class ExploreMain:
         need_repair.update([ship for ship in fleet if ship in dock_ship])
 
         if len(need_repair) != 0:
-            time.sleep(3)
+            time.sleep(1)
             repair_data = self.sender.instant_repair(ships=need_repair)
             # 更新船只信息
             if "shipVOs" in repair_data:
@@ -357,7 +357,7 @@ class ExploreMain:
                             cid=ship['shipVO']['shipCid'],
                             is_new=is_new
                         )
-                    time.sleep(3)
+                    time.sleep(1)
                     build_data = self.sender.build_boat(dock['id'], oil, ammo, steel, aluminium)
                     self._memory_build_ship(build_data['dockVo'])
         except NetWorkException as e:
@@ -370,7 +370,7 @@ class ExploreMain:
     def _check_login_award(self):
         award = self.user.user_data['marketingData']['continueLoginAward']['canGetDay']
         if award != -1:
-            time.sleep(3)
+            time.sleep(1)
             self.sender.login_award()
             Log.i('_check_campaign', self.username, '领取登录奖励')
 
@@ -383,7 +383,7 @@ class ExploreMain:
                     if 'endTime' in dock:
                         if dock['endTime'] > time.time():
                             continue
-                        time.sleep(3)
+                        time.sleep(1)
                         equipment = self.sender.get_equipment(dock['id'])
                         self.user.user_equipment[int(equipment['equipmentVo']['equipmentCid'])] = equipment[
                             'equipmentVo']
@@ -391,7 +391,7 @@ class ExploreMain:
                             user=self.user_base,
                             cid=int(equipment['equipmentVo']['equipmentCid'])
                         )
-                    time.sleep(3)
+                    time.sleep(1)
                     build_data = self.sender.build_equipment(dock['id'], oil, ammo, steel, aluminium)
                     self._memory_build_equipment(build_data['equipmentDockVo'])
         except NetWorkException as e:
@@ -406,7 +406,7 @@ class ExploreMain:
             for task_vo in self.user.user_data['taskVo']:
                 condition = [i['finishedAmount'] >= i['totalAmount'] for i in task_vo['condition']]
                 if all(condition):
-                    time.sleep(3)
+                    time.sleep(1)
                     self.sender.get_task(cid=task_vo['taskCid'])
                     Log.i('_check_campaign', self.username, f'完成任务: {task_vo["title"]}')
         except NetWorkException as e:
