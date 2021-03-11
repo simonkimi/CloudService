@@ -10,3 +10,5 @@
 /extra_apps/game/log/
 **/log/
 *.log
+
+celerybeat-schedule

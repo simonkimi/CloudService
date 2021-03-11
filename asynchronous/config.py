@@ -1,7 +1,7 @@
 from celery.schedules import crontab
-host = "127.0.0.1"
+
+host = "redis"
 port = "6379"
-password = "123456"
 
 broker_url = f'redis://{host}:{port}/0'
 # 配置结果后端
@@ -12,7 +12,7 @@ timezone = 'Asia/Shanghai'
 # 限制时间
 CELERY_TASK_SOFT_TIME_LIMIT = CELERY_TASK_TIME_LIMIT = 10 * 60
 # 配置需要导入的任务模块
-imports = ('asynchronous.tasks', )
+imports = ('asynchronous.tasks',)
 
 TASK_SERIALIZER = 'pickle'
 beat_schedule = {
