@@ -6,9 +6,7 @@ class Logger:
         self.logger = logging.getLogger('Main')
         self.logger.setLevel(logging.INFO)
         fmt = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s', '%Y-%m-%d %H:%M:%S')
-
-        if len(self.logger.handlers) == 0:
-            # 设置CMD日志
+        if not self.logger.hasHandlers():
             sh = logging.StreamHandler()
             sh.setFormatter(fmt)
             sh.setLevel(clevel)

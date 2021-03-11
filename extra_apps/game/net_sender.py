@@ -140,6 +140,14 @@ class NetSender:
         url = f'{self._server}boat/lock/{ship_id}/{self._build_url_tail()}'
         return self._build_get(url)
 
+    def login_award(self):
+        url = f'{self._server}active/getLoginAward/c3ecc6250c89e88d83832e3395efb973/{self._build_url_tail()}'
+        return self._build_get(url)
+
+    def get_task(self, cid):
+        url = f'{self._server}task/getAward/{cid}/{self._build_url_tail()}'
+        return self._build_get(url)
+
     def _build_get(self, url):
         try:
             data = self._requests.get(url=url, cookies=self._cookies, headers=NORMAL_HEADERS, timeout=20).content

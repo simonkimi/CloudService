@@ -22,8 +22,6 @@ class ExploreUser:
         self.unlock_ship = []
         self.unlock_equipment = []
 
-        self.task_info = {}
-
         self.ship_num_top = 0
         self.equipment_top = 0
 
@@ -56,6 +54,8 @@ class ExploreMain:
             return
 
         self._check_repair_finish()
+        self._check_task()
+        self._check_login_award()
 
         if self.user_profile.explore_switch:
             self._check_explore()
@@ -91,6 +91,7 @@ class ExploreMain:
 
         if self.user_profile.repair_switch:
             self._check_repair()
+        Log.i("_main", f"完成用户", self.username)
 
     def _check_pvp(self, fleet, formats, night_fight):
         try:
@@ -366,6 +367,13 @@ class ExploreMain:
             self._create_operate(user=self.user_base, desc=f'建造船只出现错误: {str(e)}', desc_type=2)
             return False
 
+    def _check_login_award(self):
+        award = self.user.user_data['marketingData']['continueLoginAward']['canGetDay']
+        if award != -1:
+            time.sleep(3)
+            self.sender.login_award()
+            Log.i('_check_campaign', self.username, '领取登录奖励')
+
     def _check_build_equipment(self, oil, ammo, steel, aluminium):
         try:
             for dock in self.user.user_data['equipmentDockVo']:
@@ -393,6 +401,21 @@ class ExploreMain:
             self._create_operate(user=self.user_base, desc=f'开发装备出现错误: {str(e)}', desc_type=2)
             return False
 
+    def _check_task(self):
+        try:
+            for task_vo in self.user.user_data['taskVo']:
+                condition = [i['finishedAmount'] >= i['totalAmount'] for i in task_vo['condition']]
+                if all(condition):
+                    time.sleep(3)
+                    self.sender.get_task(cid=task_vo['taskCid'])
+                    Log.i('_check_campaign', self.username, f'完成任务: {task_vo["title"]}')
+        except NetWorkException as e:
+            self._create_operate(user=self.user_base, desc=f'网络错误: {e.code}, 请求{e.url}时发生错误', desc_type=2)
+            return False
+        except Exception as e:
+            self._create_operate(user=self.user_base, desc=f'收任务出现错误: {str(e)}', desc_type=2)
+            return False
+
     def _parse_user_data(self) -> bool:
         try:
             # 获取用户数据
@@ -414,10 +437,6 @@ class ExploreMain:
             # 解析装备数据
             for equipment in self.user.user_data['equipmentVo']:
                 self.user.user_equipment[int(equipment['equipmentCid'])] = equipment
-
-            # 解析任务列表
-            for eachTask in self.user.user_data['taskVo']:
-                self.user.task_info[eachTask['taskCid']] = eachTask
 
             # 舰队
             for fleet in self.user.user_data['fleetVo']:

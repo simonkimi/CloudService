@@ -9,7 +9,4 @@ django.setup()
 
 from password.models import PasswordModel
 
-PasswordModel.objects.create(
-    point=1000,
-    code="1234567890"
-)
+print(all([True, True, True]))

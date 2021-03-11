@@ -12,3 +12,4 @@
 *.log
 
 celerybeat-schedule
+/old_data/
