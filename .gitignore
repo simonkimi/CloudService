@@ -13,3 +13,4 @@
 
 celerybeat-schedule
 /old_data/
+*.bak
