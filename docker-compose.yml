@@ -15,7 +15,7 @@ services:
       - redis
     volumes:
       - '.:/var/service'
-    command: 'gunicorn -b 0.0.0.0:8000  cloudService.wsgi'
+    command: 'gunicorn -b 0.0.0.0:8000 cloudService.wsgi'
     environment:
       DEBUG: '1'
 
@@ -37,6 +37,6 @@ services:
       - redis
     volumes_from:
       - web
-    command: 'celery -A asynchronous worker --loglevel=info'
+    command: 'celery -A asynchronous worker -c 15 --loglevel=info'
 
 
