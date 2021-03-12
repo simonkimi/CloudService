@@ -222,10 +222,12 @@ class NetSender:
                 if 'eid' in login_data and int(login_data['eid']) == -127:
                     if not need_refresh_token:
                         need_refresh_token = True
+                        Log.i('NetSender.login.url_login', self._username, "需要从passport获取token")
                         continue
-                    Log.e('NetSender.login.url_login)', '获取Token出错', f'用户名:{self._username}', '两次获取Token均出现-127问题')
+                    Log.e('NetSender.login.url_login', '获取Token出错', f'用户名:{self._username}', '两次获取Token均出现-127问题')
                     raise Exception('NetSender.login.url_login 两次获取Token均出现-127问题')
-
+                else:
+                    Log.i('NetSender.login.url_login', self._username, "直接登录, 无需Token")
                 self._cookies = rsp.cookies.get_dict()
                 rsp_data = json.loads(zlib.decompress(rsp.content))
                 uid = rsp_data['userId']
