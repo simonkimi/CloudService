@@ -154,6 +154,8 @@ class NetSender:
             if 'eid' in json_data:
                 raise NetWorkException(code=json_data['eid'], url=url)
             return json_data
+        except NetWorkException as e:
+            raise e
         except Exception as e:
             raise Exception(f'{str(url)}, {str(e)}')
 
