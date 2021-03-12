@@ -157,8 +157,8 @@ class NetSender:
         except Exception as e:
             raise Exception(f'{str(url)}, {str(e)}')
 
-    def login(self, user_profile: UserProfile):
-        saved_token = user_profile.token
+    def login(self, user_profile: UserProfile = None):
+        saved_token = user_profile.token if user_profile is not None else ''
         if self._is_login:
             return
         need_refresh_token = False
@@ -169,8 +169,7 @@ class NetSender:
         try:
             rep = self._requests.get(url=url_version).json()
             if 'version' not in rep:
-                raise ServerCloseException()
-
+                raise ServerCloseException('服务器维护中...')
             self._version = rep['version']['newVersionId']
             login_server = rep['loginServer']
             hm_login_server = rep['hmLoginServer']
@@ -208,8 +207,9 @@ class NetSender:
                     rsp = self._requests.post(url=url_token, data=data, headers=self._build_headers(url_info)).json()
                     if "error" in rsp and int(rsp["error"]) != 0:
                         raise Exception(f'验证Token出错:{rsp["errmsg"]}')
-                    user_profile.token = saved_token
-                    user_profile.save(update_fields=['token'])
+                    if user_profile is not None:
+                        user_profile.token = saved_token
+                        user_profile.save(update_fields=['token'])
                 except Exception as e:
                     Log.e('NetSender.login.url_info)', '验证Token出错', f'用户名:{self._username}', str(e))
                     raise Exception('NetSender.login.url_info ' + str(e))
