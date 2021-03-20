@@ -174,7 +174,6 @@ class NetSender:
                 raise ServerCloseException('服务器维护中...')
             self._version = rep['version']['newVersionId']
             login_server = rep['loginServer']
-            hm_login_server = rep['hmLoginServer']
         except Exception as e:
             Log.e('NetSender.login.version', '获取Version出错', f'用户名:{self._username}', str(e))
             raise Exception('NetSender.login.version ' + str(e))
@@ -183,38 +182,20 @@ class NetSender:
             if len(saved_token) != 32 or need_refresh_token:
                 # 获取token
                 try:
-                    url_token = f'{hm_login_server}1.0/get/login/@self'
-                    login_data = json.dumps({
-                        "platform": "0",
-                        "appid": "0",
-                        "app_server_type": "0",
-                        "password": self._password,
-                        "username": self._username
-                    }).replace(" ", "")
-                    rsp = self._requests.post(url=url_token, data=login_data,
-                                              headers=self._build_headers(url_token)).json()
-                    if "error" in rsp and int(rsp["error"]) != 0:
-                        if int(rsp['error']) == 21003:
+                    url_token = 'http://token_web:8001/'
+                    rsp = self._requests.post(url=url_token, json={
+                        'username': self._username,
+                        'password': self._password,
+                        'server': self._server_index
+                    }).json()
+                    if 'error' in rsp:
+                        if rsp['error'] == '401':
                             raise LoginPasswordException()
-                        raise Exception(f'code:{rsp["error"]} msg:{rsp["errmsg"] if "errmsg" in rsp else ""}')
-                    saved_token = rsp['access_token']
+                        Log.e('NetSender.login.token', '获取Token出错', f'用户名:{self._username}', str(rsp['errmsg']))
+                        raise Exception('NetSender.login.token ' + str(rsp['errmsg']))
                 except Exception as e:
                     Log.e('NetSender.login.token', '获取Token出错', f'用户名:{self._username}', str(e))
                     raise Exception('NetSender.login.token ' + str(e))
-
-                # 验证token并获取游戏token
-                try:
-                    url_info = f'{hm_login_server}1.0/get/userInfo/@self'
-                    data = json.dumps({"access_token": saved_token})
-                    rsp = self._requests.post(url=url_info, data=data, headers=self._build_headers(url_info)).json()
-                    if "error" in rsp and int(rsp["error"]) != 0:
-                        raise Exception(f'验证Token出错:{rsp["errmsg"]}')
-                    if user_profile is not None:
-                        user_profile.token = saved_token
-                        user_profile.save(update_fields=['token'])
-                except Exception as e:
-                    Log.e('NetSender.login.url_info)', '验证Token出错', f'用户名:{self._username}', str(e))
-                    raise Exception('NetSender.login.url_info ' + str(e))
 
             # 获取用户Cookies
             try:
