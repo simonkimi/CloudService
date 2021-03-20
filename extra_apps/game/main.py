@@ -467,16 +467,16 @@ class ExploreMain:
             user_resource.steel = self.user.user_data['userVo']['steel']
             user_resource.aluminium = self.user.user_data['userVo']['aluminium']
 
-            user_resource.fast_build = packages[141]
-            user_resource.fast_repair = packages[541]
-            user_resource.build_map = packages[241]
-            user_resource.equipment_map = packages[741]
+            user_resource.fast_build = packages[141] if 141 in packages else 0
+            user_resource.fast_repair = packages[541] if 541 in packages else 0
+            user_resource.build_map = packages[241] if 241 in packages else 0
+            user_resource.equipment_map = packages[741] if 741 in packages else 0
 
-            user_resource.ss_cube = packages[10541]
-            user_resource.dd_cube = packages[10441]
-            user_resource.cl_cube = packages[10341]
-            user_resource.bb_cube = packages[10241]
-            user_resource.cv_cube = packages[10141]
+            user_resource.ss_cube = packages[10541] if 10541 in packages else 0
+            user_resource.dd_cube = packages[10441] if 10441 in packages else 0
+            user_resource.cl_cube = packages[10341] if 10341 in packages else 0
+            user_resource.bb_cube = packages[10241] if 10241 in packages else 0
+            user_resource.cv_cube = packages[10141] if 10141 in packages else 0
             user_resource.save()
 
         except NetWorkException as e:

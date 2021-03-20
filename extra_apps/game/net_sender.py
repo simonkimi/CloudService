@@ -154,11 +154,13 @@ class NetSender:
             if 'eid' in json_data:
                 raise NetWorkException(code=json_data['eid'], url=url)
             return json_data
+        except NetWorkException as e:
+            raise e
         except Exception as e:
             raise Exception(f'{str(url)}, {str(e)}')
 
-    def login(self, user_profile: UserProfile):
-        saved_token = user_profile.token
+    def login(self, user_profile: UserProfile = None):
+        saved_token = user_profile.token if user_profile is not None else ''
         if self._is_login:
             return
         need_refresh_token = False
@@ -169,8 +171,7 @@ class NetSender:
         try:
             rep = self._requests.get(url=url_version).json()
             if 'version' not in rep:
-                raise ServerCloseException()
-
+                raise ServerCloseException('服务器维护中...')
             self._version = rep['version']['newVersionId']
             login_server = rep['loginServer']
             hm_login_server = rep['hmLoginServer']
@@ -205,11 +206,12 @@ class NetSender:
                 try:
                     url_info = f'{hm_login_server}1.0/get/userInfo/@self'
                     data = json.dumps({"access_token": saved_token})
-                    rsp = self._requests.post(url=url_token, data=data, headers=self._build_headers(url_info)).json()
+                    rsp = self._requests.post(url=url_info, data=data, headers=self._build_headers(url_info)).json()
                     if "error" in rsp and int(rsp["error"]) != 0:
                         raise Exception(f'验证Token出错:{rsp["errmsg"]}')
-                    user_profile.token = saved_token
-                    user_profile.save(update_fields=['token'])
+                    if user_profile is not None:
+                        user_profile.token = saved_token
+                        user_profile.save(update_fields=['token'])
                 except Exception as e:
                     Log.e('NetSender.login.url_info)', '验证Token出错', f'用户名:{self._username}', str(e))
                     raise Exception('NetSender.login.url_info ' + str(e))
@@ -222,10 +224,12 @@ class NetSender:
                 if 'eid' in login_data and int(login_data['eid']) == -127:
                     if not need_refresh_token:
                         need_refresh_token = True
+                        Log.i('NetSender.login.url_login', self._username, "需要从passport获取token")
                         continue
-                    Log.e('NetSender.login.url_login)', '获取Token出错', f'用户名:{self._username}', '两次获取Token均出现-127问题')
+                    Log.e('NetSender.login.url_login', '获取Token出错', f'用户名:{self._username}', '两次获取Token均出现-127问题')
                     raise Exception('NetSender.login.url_login 两次获取Token均出现-127问题')
-
+                else:
+                    Log.i('NetSender.login.url_login', self._username, "直接登录, 无需Token")
                 self._cookies = rsp.cookies.get_dict()
                 rsp_data = json.loads(zlib.decompress(rsp.content))
                 uid = rsp_data['userId']

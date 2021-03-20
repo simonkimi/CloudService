@@ -31,7 +31,7 @@ def find_need_operate_user():
 
     user_profile = UserProfile.objects.all()
     user_profile.filter(~Q(addition_day=now_day)
-                        & (~Q(campaign_map=0) | ~Q(pvp_fleet=0) | ~Q(build_switch=True) | ~Q(equipment_switch=True))
+                        & (~Q(campaign_map=0) | ~Q(pvp_fleet=0) | Q(build_switch=True) | Q(equipment_switch=True))
                         & Q(point__gt=0)
                         & Q(switch=True)) \
         .update(point=F("point") - 1, addition_day=now_day)

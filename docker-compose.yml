@@ -15,7 +15,7 @@ services:
       - redis
     volumes:
       - '.:/var/service'
-    command: 'gunicorn -b 0.0.0.0:8000  cloudService.wsgi'
+    command: 'gunicorn -b 0.0.0.0:8000 cloudService.wsgi'
     environment:
       DEBUG: '1'
 
