@@ -5,19 +5,26 @@ services:
   redis:
     image: 'redis:alpine'
 
+  token_web:
+    build: 'extra_apps/CloudServiceToken/Dockerfile'
+    links:
+      - redis
+    depends_on:
+      - redis
+
   web:
     build: .
     ports:
       - '8000:8000'
     links:
       - redis
+      - token_web
     depends_on:
       - redis
+      - token_web
     volumes:
       - '.:/var/service'
     command: 'gunicorn -b 0.0.0.0:8000 cloudService.wsgi'
-    environment:
-      DEBUG: '1'
 
   celery_beat:
     build: .
