@@ -206,7 +206,7 @@ class NetSender:
                 try:
                     url_info = f'{hm_login_server}1.0/get/userInfo/@self'
                     data = json.dumps({"access_token": saved_token})
-                    rsp = self._requests.post(url=url_token, data=data, headers=self._build_headers(url_info)).json()
+                    rsp = self._requests.post(url=url_info, data=data, headers=self._build_headers(url_info)).json()
                     if "error" in rsp and int(rsp["error"]) != 0:
                         raise Exception(f'验证Token出错:{rsp["errmsg"]}')
                     if user_profile is not None:
