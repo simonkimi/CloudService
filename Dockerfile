@@ -2,6 +2,7 @@ FROM python:3.9.2-slim
 
 MAINTAINER simonkimi 805757448@qq.com
 
+ENV DOCKER=1
 EXPOSE 8000
 WORKDIR /var/service
 RUN pip config set global.index-url https://pypi.doubanio.com/simple/

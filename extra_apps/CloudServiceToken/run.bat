@@ -1,1 +1,0 @@
-celery -A asyncTask worker --loglevel=info -P solo

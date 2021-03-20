@@ -2,10 +2,11 @@ import datetime
 import time
 from asynchronous.app import app
 from django.db.models import F, Q
-
 from game.main import ExploreMain
 from log import Log
 from user.models import UserProfile, User
+
+
 
 
 @app.task()

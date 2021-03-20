@@ -5,23 +5,14 @@ services:
   redis:
     image: 'redis:alpine'
 
-  token_web:
-    build: 'extra_apps/CloudServiceToken/Dockerfile'
-    links:
-      - redis
-    depends_on:
-      - redis
-
   web:
     build: .
     ports:
       - '8000:8000'
     links:
       - redis
-      - token_web
     depends_on:
       - redis
-      - token_web
     volumes:
       - '.:/var/service'
     command: 'gunicorn -b 0.0.0.0:8000 cloudService.wsgi'
@@ -36,7 +27,7 @@ services:
       - web
     command: 'celery -A asynchronous beat'
 
-  celery_worker:
+  celery_login:
     build: .
     links:
       - redis
@@ -44,6 +35,18 @@ services:
       - redis
     volumes_from:
       - web
-    command: 'celery -A asynchronous worker -c 15 --loglevel=info'
+    command: 'celery -A asynchronous worker -Q -P solo token --loglevel=info'
+
+  celery_worker:
+    build: .
+    links:
+      - redis
+    depends_on:
+      - redis
+      - celery_login
+      - celery_beat
+    volumes_from:
+      - web
+    command: 'celery -A asynchronous worker -Q game -c 15 --loglevel=info'
 
 

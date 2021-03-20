@@ -1,10 +1,11 @@
 import json
 import requests
 import base64
-import datetime
 import hmac
 import hashlib
-from .app import app
+import time
+import datetime
+from asynchronous.app import app
 
 PASS_KEY = "kHPmWZ4zQBYP24ubmJ5wA4oz0d8EgIFe"
 PASS_KEY_HEAD = "881d3SlFucX5R5hE"
@@ -12,7 +13,7 @@ PASS_KEY_HEAD = "881d3SlFucX5R5hE"
 
 @app.task()
 def get_token(username: str, password: str, server: int) -> {}:
-    print(username, password, server)
+    time.sleep(1)
     session = requests.session()
     login_url = 'https://passportapi.moefantasy.com/' if server <= 3 else 'https://iospassportapi.moefantasy.com/'
     url_token = f'{login_url}1.0/get/login/@self'
@@ -44,6 +45,7 @@ def get_token(username: str, password: str, server: int) -> {}:
                 'errmsg': f'code:{rsp_json["error"]} msg:{rsp_json["errmsg"] if "errmsg" in rsp else ""}'
             }
         token = rsp_json['access_token']
+        print(f'获取到Token {token}')
         return {
             'token': token,
         }

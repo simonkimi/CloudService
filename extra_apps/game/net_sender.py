@@ -11,7 +11,8 @@ from urllib.parse import urlencode
 from extra_apps.log import Log
 from extra_apps.game.constant import URL_IOS_VERSION, URL_VERSION, PASS_KEY, PASS_KEY_HEAD, SERVER_LIST, NORMAL_HEADERS
 from user.models import UserProfile
-
+from asynchronous.login_task import get_token
+from celery.result import AsyncResult
 
 class LoginPasswordException(Exception):
     pass
@@ -182,12 +183,7 @@ class NetSender:
             if len(saved_token) != 32 or need_refresh_token:
                 # 获取token
                 try:
-                    url_token = 'http://token_web:8001/'
-                    rsp = self._requests.post(url=url_token, json={
-                        'username': self._username,
-                        'password': self._password,
-                        'server': self._server_index
-                    }).json()
+                    rsp = get_token.s(self._username, self._password, self._server_index)()
                     if 'error' in rsp:
                         if rsp['error'] == '401':
                             raise LoginPasswordException()
