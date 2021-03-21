@@ -35,7 +35,7 @@ services:
       - redis
     volumes_from:
       - web
-    command: 'celery -A asynchronous worker -Q -P solo token --loglevel=info'
+    command: 'celery -A asynchronous worker -Q token -P solo --loglevel=info'
 
   celery_worker:
     build: .

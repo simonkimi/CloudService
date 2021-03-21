@@ -14,6 +14,7 @@ from user.models import UserProfile
 from asynchronous.login_task import get_token
 from celery.result import AsyncResult
 
+
 class LoginPasswordException(Exception):
     pass
 
@@ -183,12 +184,15 @@ class NetSender:
             if len(saved_token) != 32 or need_refresh_token:
                 # 获取token
                 try:
-                    rsp = get_token.s(self._username, self._password, self._server_index)()
+                    need_refresh_token = True
+                    rsp = get_token.delay(self._username, self._password, self._server_index).get(
+                        disable_sync_subtasks=False)
                     if 'error' in rsp:
                         if rsp['error'] == '401':
                             raise LoginPasswordException()
                         Log.e('NetSender.login.token', '获取Token出错', f'用户名:{self._username}', str(rsp['errmsg']))
                         raise Exception('NetSender.login.token ' + str(rsp['errmsg']))
+                    saved_token = rsp['token']
                 except Exception as e:
                     Log.e('NetSender.login.token', '获取Token出错', f'用户名:{self._username}', str(e))
                     raise Exception('NetSender.login.token ' + str(e))
@@ -203,10 +207,13 @@ class NetSender:
                         need_refresh_token = True
                         Log.i('NetSender.login.url_login', self._username, "需要从passport获取token")
                         continue
-                    Log.e('NetSender.login.url_login', '获取Token出错', f'用户名:{self._username}', '两次获取Token均出现-127问题')
+                    Log.e('NetSender.login.url_login', '获取Token出错', f'用户名:{self._username}', '获取Token均出现-127问题')
                     raise Exception('NetSender.login.url_login 两次获取Token均出现-127问题')
                 else:
-                    Log.i('NetSender.login.url_login', self._username, "直接登录, 无需Token")
+                    if not need_refresh_token:
+                        Log.i('NetSender.login.url_login', self._username, "直接登录, 无需Token")
+                    else:
+                        Log.i('NetSender.login.url_login', self._username, "从Token登录")
                 self._cookies = rsp.cookies.get_dict()
                 rsp_data = json.loads(zlib.decompress(rsp.content))
                 uid = rsp_data['userId']
