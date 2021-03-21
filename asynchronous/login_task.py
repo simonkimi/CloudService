@@ -6,6 +6,7 @@ import hashlib
 import time
 import datetime
 from asynchronous.app import app
+from log import Log
 
 PASS_KEY = "kHPmWZ4zQBYP24ubmJ5wA4oz0d8EgIFe"
 PASS_KEY_HEAD = "881d3SlFucX5R5hE"
@@ -45,7 +46,7 @@ def get_token(username: str, password: str, server: int) -> {}:
                 'errmsg': f'code:{rsp_json["error"]} msg:{rsp_json["errmsg"] if "errmsg" in rsp else ""}'
             }
         token = rsp_json['access_token']
-        print(f'获取到Token {token}')
+        Log.i('get_token', username, f'获取到Token {token}')
         return {
             'token': token,
         }

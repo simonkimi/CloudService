@@ -223,7 +223,6 @@ class NetSender:
                 raise Exception('NetSender.login.url_login ' + str(e))
 
         # 正式登录游戏
-        print('登陆游戏')
         now_time = str(int(round(time.time() * 1000)))
         random.seed(hashlib.md5(self._username.encode('utf-8')).hexdigest())
         data_dict = {
