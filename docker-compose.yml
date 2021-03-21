@@ -47,6 +47,6 @@ services:
       - celery_beat
     volumes_from:
       - web
-    command: 'celery -A asynchronous worker -Q game -c 15 --loglevel=info'
+    command: 'celery -A asynchronous worker -Q game -c 25 --loglevel=info'
 
 
